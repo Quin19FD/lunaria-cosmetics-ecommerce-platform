@@ -1,0 +1,58 @@
+import type { Collection } from "../types";
+
+export const COLLECTIONS_MOCK: Collection[] = [
+  {
+    id: "col_01",
+    name: "Hào Quang Mùa Xuân",
+    slug: "lunaria-bloom",
+    badge: "PHIÊN BẢN GIỚI HẠN 2024",
+    label: "01 · XUÂN ’24",
+    headline: "Hào Quang Mùa Xuân Lunaria",
+    highlightWord: "Bloom.",
+    summary: "Sự tôn vinh của sự hồi sinh. Được truyền cảm hứng từ các loài thực vật có hoa và sắc tố phản chiếu ánh sáng mô phỏng nét chạm đầu tiên của bình minh trên những hạt sương sớm.",
+    description: [
+      "Lấy cảm hứng từ sự phát quang sinh học của các loài thực vật nở vẻ đêm quý hiếm, Bộ sưu tập Bloom là sự kết hợp giả kim giữa khoa học thực vật và ánh sáng thanh khiết.",
+      "Chúng tôi đã dành ba năm ở vùng cao độ của dãy Andes, nghiên cứu cách các cánh hoa giữ ẩm dưới ánh sáng UV cực độ.",
+    ],
+    ctaLabel: "Khám phá Nghi thức",
+    heroImage: "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=1400&h=700&fit=crop&q=80",
+    cardImage: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=700&fit=crop&q=80",
+    productIds: ["prod_01","prod_02","prod_03","prod_04","prod_05","prod_06","prod_07","prod_08"],
+  },
+  {
+    id: "col_02",
+    name: "Hoa Nở Đêm Khuya",
+    slug: "hoa-no-dem-khuya",
+    badge: "BỘ SƯU TẬP ĐÊM",
+    label: "02 · ĐÊM",
+    headline: "Hoa Nở Đêm Khuya Cùng",
+    highlightWord: "Lunaria Night.",
+    summary: "Sâu lắng, bí ẩn và mạnh mẽ. Khám phá bảng màu của mận đậm và than nhung được thiết kế cho những giờ sau khi hoàng hôn buông xuống.",
+    description: [
+      "Bộ sưu tập Đêm Khuya lấy cảm hứng từ vẻ đẹp huyền bí của những loài hoa chỉ nở vào ban đêm.",
+      "Công thức độc quyền với chiết xuất hoa quỳnh và retinol thế hệ mới.",
+    ],
+    ctaLabel: "Xem bộ sưu tập",
+    heroImage: "https://images.unsplash.com/photo-1495638488670-437f770ef8c5?w=1400&h=700&fit=crop&q=80",
+    cardImage: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&h=700&fit=crop&q=80",
+    productIds: ["prod_03","prod_07","prod_05","prod_08","prod_12","prod_11"],
+  },
+  {
+    id: "col_03",
+    name: "Ánh Sáng Vĩnh Cửu",
+    slug: "anh-sang-vinh-cuu",
+    badge: "BỘ SƯU TẬP ĐẶC TRƯNG",
+    label: "03 · ĐẶC TRƯNG",
+    headline: "Ánh Sáng Vĩnh Cửu Của",
+    highlightWord: "Lunaria.",
+    summary: "Tinh tuý của LUNARIA được ghi lại. Một dòng phấn bắt sáng và tinh chất vượt thời gian tạo nên sự rạng rỡ từ bên trong không bao giờ phai nhạt.",
+    description: [
+      "Tinh tuý của LUNARIA được ghi lại trong bộ sưu tập đặc trưng này.",
+      "Được chế tác từ những thành phần quý giá nhất, mỗi sản phẩm là một tác phẩm nghệ thuật.",
+    ],
+    ctaLabel: "Xem bộ sưu tập",
+    heroImage: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400&h=700&fit=crop&q=80",
+    cardImage: "https://images.unsplash.com/photo-1583209814683-c023dd293cc6?w=600&h=700&fit=crop&q=80",
+    productIds: ["prod_01","prod_06","prod_09","prod_10","prod_04","prod_12"],
+  },
+];

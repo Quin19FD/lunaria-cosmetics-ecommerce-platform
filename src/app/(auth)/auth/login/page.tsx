@@ -1,10 +1,12 @@
-export const metadata = { title: "Đăng nhập" };
+import type { Metadata } from "next";
+
+import { LoginForm } from "@/features/auth";
+
+export const metadata: Metadata = {
+  title: "Đăng nhập",
+  description: "Đăng nhập vào tài khoản Lunaria Beauty của bạn",
+};
 
 export default function LoginPage() {
-  return (
-    <div className="rounded-lg bg-white p-8 shadow-sm">
-      <h1 className="font-serif text-2xl font-bold">Đăng nhập</h1>
-      {/* <LoginForm /> */}
-    </div>
-  );
+  return <LoginForm />;
 }

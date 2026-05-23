@@ -1,10 +1,12 @@
-export const metadata = { title: "Đăng ký" };
+import type { Metadata } from "next";
+
+import { RegisterForm } from "@/features/auth";
+
+export const metadata: Metadata = {
+  title: "Đăng ký",
+  description: "Tạo tài khoản Lunaria Beauty mới",
+};
 
 export default function RegisterPage() {
-  return (
-    <div className="rounded-lg bg-white p-8 shadow-sm">
-      <h1 className="font-serif text-2xl font-bold">Đăng ký tài khoản</h1>
-      {/* <RegisterForm /> */}
-    </div>
-  );
+  return <RegisterForm />;
 }

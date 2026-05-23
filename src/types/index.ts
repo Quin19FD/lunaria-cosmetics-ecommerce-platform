@@ -11,3 +11,8 @@ export interface PaginatedResult<T> {
 export type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+export interface NavItem {
+  label: string;
+  href: string;
+}

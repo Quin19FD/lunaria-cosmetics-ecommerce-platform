@@ -1,7 +1,28 @@
+import {
+  BestSellers,
+  FeaturedCategories,
+  FlashSaleBar,
+  HeroBanner,
+  Newsletter,
+  Testimonials,
+} from "@/features/home";
+import { catalogService } from "@/modules/catalog";
+import { productService } from "@/modules/products";
+import { testimonialService } from "@/modules/testimonials";
+
 export default function HomePage() {
+  const categories = catalogService.getFeaturedCategories();
+  const bestSellers = productService.getBestSellers();
+  const testimonials = testimonialService.getFeatured();
+
   return (
-    <section className="container mx-auto px-4 py-16">
-      <h1 className="font-serif text-4xl font-bold">Lunaria Cosmetics</h1>
-    </section>
+    <>
+      <HeroBanner />
+      <FlashSaleBar />
+      <FeaturedCategories categories={categories} />
+      <BestSellers products={bestSellers} />
+      <Testimonials testimonials={testimonials} />
+      <Newsletter />
+    </>
   );
 }
