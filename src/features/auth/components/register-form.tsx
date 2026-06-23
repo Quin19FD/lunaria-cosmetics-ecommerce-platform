@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authService } from "@/modules/auth";
-import { useAuthStore } from "@/store/use-auth-store";
+import { registerUser } from "@/modules/auth";
 
 import { AuthCard } from "./auth-card";
 import { AuthHeader } from "./auth-header";
@@ -16,7 +16,6 @@ import { SocialButtons } from "./social-buttons";
 
 export function RegisterForm() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,15 +34,17 @@ export function RegisterForm() {
     }
 
     setIsLoading(true);
-    const result = await authService.register({ name, email, password });
+    const result = await registerUser({ name, email, password });
 
-    if (result.success) {
-      setUser(result.data);
-      router.push("/");
-    } else {
+    if (!result.success) {
       setError(result.error);
       setIsLoading(false);
+      return;
     }
+
+    await signIn("credentials", { email, password, redirect: false });
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -124,7 +125,7 @@ export function RegisterForm() {
         Already have an account?{" "}
         <Link
           href="/auth/login"
-          className="font-semibold text-brand-500 hover:text-brand-600"
+          className="text-brand-500 hover:text-brand-600 font-semibold"
         >
           Sign in
         </Link>

@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authService } from "@/modules/auth";
-import { useAuthStore } from "@/store/use-auth-store";
 
 import { AuthCard } from "./auth-card";
 import { AuthHeader } from "./auth-header";
@@ -16,7 +15,6 @@ import { SocialButtons } from "./social-buttons";
 
 export function LoginForm() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,14 +26,18 @@ export function LoginForm() {
     setError("");
     setIsLoading(true);
 
-    const result = await authService.login({ email, password });
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
-    if (result.success) {
-      setUser(result.data);
-      router.push("/");
-    } else {
-      setError(result.error);
+    if (result?.error) {
+      setError("Email hoặc mật khẩu không đúng");
       setIsLoading(false);
+    } else {
+      router.push("/");
+      router.refresh();
     }
   }
 
@@ -77,7 +79,7 @@ export function LoginForm() {
           rightElement={
             <Link
               href="/auth/forgot-password"
-              className="text-[11px] font-semibold tracking-wider text-brand-500 uppercase hover:text-brand-600"
+              className="text-brand-500 hover:text-brand-600 text-[11px] font-semibold tracking-wider uppercase"
             >
               Forgot?
             </Link>
@@ -101,7 +103,7 @@ export function LoginForm() {
         New to the bloom?{" "}
         <Link
           href="/auth/register"
-          className="font-semibold text-brand-500 hover:text-brand-600"
+          className="text-brand-500 hover:text-brand-600 font-semibold"
         >
           Create Account
         </Link>

@@ -1,28 +1,26 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 
 import { AccountSidebar } from "@/features/account";
-import { useMounted } from "@/hooks/use-mounted";
-import { useAuthStore } from "@/store/use-auth-store";
 
 export default function AccountLayout({ children }: { children: ReactNode }) {
-  const mounted = useMounted();
-  const user = useAuthStore((s) => s.user);
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (mounted && !user) {
+    if (status === "unauthenticated") {
       router.replace("/auth/login");
     }
-  }, [mounted, user, router]);
+  }, [status, router]);
 
-  if (!mounted || !user) {
+  if (status !== "authenticated") {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+        <div className="border-brand-500 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     );
   }

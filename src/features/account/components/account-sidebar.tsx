@@ -3,13 +3,13 @@
 import { Lock, LogOut, ShoppingBag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { useMemo } from "react";
 
 import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
 import { accountService } from "@/modules/account";
-import { useAuthStore } from "@/store/use-auth-store";
 
 const NAV_ITEMS = [
   { label: "Thông tin cá nhân", href: "/account/profile", icon: User },
@@ -20,14 +20,13 @@ const NAV_ITEMS = [
 export function AccountSidebar() {
   const mounted = useMounted();
   const pathname = usePathname();
-  const router = useRouter();
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const { data: session } = useSession();
+  const user = session?.user;
   const loyalty = useMemo(() => accountService.getLoyaltyPoints(), []);
 
   if (!mounted || !user) return null;
 
-  const initials = user.name
+  const initials = (user.name ?? "")
     .split(" ")
     .map((w) => w[0])
     .join("")
@@ -38,32 +37,31 @@ export function AccountSidebar() {
     (loyalty.points / (loyalty.points + loyalty.remaining)) * 100;
 
   function handleLogout() {
-    logout();
-    router.push("/auth/login");
+    void signOut({ callbackUrl: "/auth/login" });
   }
 
   return (
     <div className="space-y-6">
       {/* User info */}
       <div className="flex items-center gap-3">
-        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-brand-100">
-          {user.avatar ? (
+        <div className="bg-brand-100 h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
+          {user.image ? (
             <Image
-              src={user.avatar}
-              alt={user.name}
+              src={user.image}
+              alt={user.name ?? ""}
               width={48}
               height={48}
               className="h-12 w-12 object-cover"
             />
           ) : (
-            <span className="flex h-12 w-12 items-center justify-center text-sm font-bold text-brand-500">
+            <span className="text-brand-500 flex h-12 w-12 items-center justify-center text-sm font-bold">
               {initials}
             </span>
           )}
         </div>
         <div>
           <p className="font-semibold text-neutral-900">{user.name}</p>
-          <p className="text-[11px] font-semibold tracking-wider text-brand-500 uppercase">
+          <p className="text-brand-500 text-[11px] font-semibold tracking-wider uppercase">
             Thành viên hạng vàng
           </p>
         </div>
@@ -96,14 +94,14 @@ export function AccountSidebar() {
       <button
         type="button"
         onClick={handleLogout}
-        className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-brand-500 transition-colors hover:text-brand-600"
+        className="text-brand-500 hover:text-brand-600 flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors"
       >
         <LogOut className="h-4 w-4" />
         Đăng xuất
       </button>
 
       {/* Loyalty card */}
-      <div className="rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 p-5 text-white">
+      <div className="from-brand-500 to-brand-400 rounded-2xl bg-gradient-to-br p-5 text-white">
         <p className="text-[10px] font-semibold tracking-widest uppercase opacity-80">
           Điểm tích lũy
         </p>

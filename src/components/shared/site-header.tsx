@@ -3,12 +3,11 @@
 import { LogOut, Menu, Search, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useMounted } from "@/hooks/use-mounted";
-import { useAuthStore } from "@/store/use-auth-store";
 import { useCartStore } from "@/store/use-cart-store";
 
 const NAV_ITEMS = [
@@ -20,18 +19,16 @@ const NAV_ITEMS = [
 ];
 
 export function SiteHeader() {
-  const router = useRouter();
   const mounted = useMounted();
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const { data: session } = useSession();
+  const user = session?.user;
   const cartCount = useCartStore((s) => s.totalItems());
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   function handleLogout() {
-    logout();
     setShowUserMenu(false);
-    router.push("/auth/login");
+    void signOut({ callbackUrl: "/auth/login" });
   }
 
   // Derive initials from user name
@@ -50,14 +47,14 @@ export function SiteHeader() {
         {/* Logo */}
         <Link href="/" className="flex flex-shrink-0 items-center gap-2">
           <svg
-            className="h-7 w-7 text-brand-500"
+            className="text-brand-500 h-7 w-7"
             viewBox="0 0 28 28"
             fill="currentColor"
             aria-hidden="true"
           >
             <path d="M14 0L15.8 10.2L26 14L15.8 17.8L14 28L12.2 17.8L2 14L12.2 10.2L14 0Z" />
           </svg>
-          <span className="hidden font-serif text-lg font-bold text-brand-500 sm:inline">
+          <span className="text-brand-500 hidden font-serif text-lg font-bold sm:inline">
             LUNARIA
           </span>
         </Link>
@@ -68,7 +65,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand-500"
+              className="hover:text-brand-500 text-sm font-medium text-neutral-700 transition-colors"
             >
               {item.label}
             </Link>
@@ -88,7 +85,12 @@ export function SiteHeader() {
           </div>
 
           {/* Search icon — mobile */}
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Tìm kiếm">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="Tìm kiếm"
+          >
             <Search className="h-5 w-5" />
           </Button>
 
@@ -98,7 +100,7 @@ export function SiteHeader() {
               <ShoppingBag className="h-5 w-5" />
             </Button>
             {mounted && cartCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+              <span className="bg-brand-500 absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white">
                 {cartCount > 9 ? "9+" : cartCount}
               </span>
             )}
@@ -111,19 +113,19 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => setShowUserMenu((v) => !v)}
-                className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:ring-offset-2"
+                className="focus:ring-brand-500/40 flex items-center gap-2 rounded-full focus:ring-2 focus:ring-offset-2 focus:outline-none"
                 aria-label="Menu tài khoản"
               >
-                {user.avatar ? (
+                {user.image ? (
                   <Image
-                    src={user.avatar}
-                    alt={user.name}
+                    src={user.image}
+                    alt={user.name ?? ""}
                     width={32}
                     height={32}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white">
+                  <span className="bg-brand-500 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white">
                     {initials}
                   </span>
                 )}
@@ -131,22 +133,40 @@ export function SiteHeader() {
 
               {/* Dropdown */}
               {showUserMenu && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
-                  <div className="border-b border-neutral-100 px-4 pb-3 pt-2">
-                    <p className="text-sm font-semibold text-neutral-900">{user.name}</p>
+                <div className="absolute top-full right-0 mt-2 w-56 rounded-xl border border-neutral-200 bg-white py-1 shadow-lg">
+                  <div className="border-b border-neutral-100 px-4 pt-2 pb-3">
+                    <p className="text-sm font-semibold text-neutral-900">
+                      {user.name}
+                    </p>
                     <p className="text-xs text-neutral-400">{user.email}</p>
                   </div>
-                  <Link href="/account/orders" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50" onClick={() => setShowUserMenu(false)}>
+                  <Link
+                    href="/account/orders"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50"
+                    onClick={() => setShowUserMenu(false)}
+                  >
                     Đơn hàng của tôi
                   </Link>
-                  <Link href="/account/profile" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50" onClick={() => setShowUserMenu(false)}>
+                  <Link
+                    href="/account/profile"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50"
+                    onClick={() => setShowUserMenu(false)}
+                  >
                     Thông tin cá nhân
                   </Link>
-                  <Link href="/account/change-password" className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50" onClick={() => setShowUserMenu(false)}>
+                  <Link
+                    href="/account/change-password"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50"
+                    onClick={() => setShowUserMenu(false)}
+                  >
                     Đổi mật khẩu
                   </Link>
                   <div className="border-t border-neutral-100">
-                    <button type="button" onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-red-500">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-red-500"
+                    >
                       <LogOut className="h-4 w-4" />
                       Đăng xuất
                     </button>
@@ -157,7 +177,7 @@ export function SiteHeader() {
           ) : mounted ? (
             <Link
               href="/auth/login"
-              className="rounded-xl bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600"
+              className="bg-brand-500 hover:bg-brand-600 rounded-xl px-4 py-2 text-sm font-medium text-white transition-colors"
             >
               Đăng nhập
             </Link>
@@ -174,7 +194,11 @@ export function SiteHeader() {
             onClick={() => setIsMobileMenuOpen((v) => !v)}
             aria-label="Mở menu"
           >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -187,7 +211,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 hover:text-brand-500"
+                className="hover:text-brand-500 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {item.label}
@@ -196,7 +220,7 @@ export function SiteHeader() {
             {mounted && !user && (
               <Link
                 href="/auth/login"
-                className="mt-2 rounded-lg bg-brand-500 px-3 py-2.5 text-center text-sm font-medium text-white"
+                className="bg-brand-500 mt-2 rounded-lg px-3 py-2.5 text-center text-sm font-medium text-white"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Đăng nhập
@@ -205,17 +229,33 @@ export function SiteHeader() {
             {mounted && user && (
               <>
                 <div className="mt-2 border-t border-neutral-200 pt-2">
-                  <Link href="/account/orders" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     Đơn hàng của tôi
                   </Link>
-                  <Link href="/account/profile" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link
+                    href="/account/profile"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     Thông tin cá nhân
                   </Link>
-                  <Link href="/account/change-password" className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Link
+                    href="/account/change-password"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     Đổi mật khẩu
                   </Link>
                 </div>
-                <button type="button" onClick={handleLogout} className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="mt-1 flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
+                >
                   <LogOut className="h-4 w-4" />
                   Đăng xuất
                 </button>

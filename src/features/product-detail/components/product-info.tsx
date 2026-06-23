@@ -1,14 +1,21 @@
 "use client";
 
-import { Star, ShoppingCart, Truck, ShieldCheck, Minus, Plus } from "lucide-react";
+import {
+  Star,
+  ShoppingCart,
+  Truck,
+  ShieldCheck,
+  Minus,
+  Plus,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/modules/products";
-import { useAuthStore } from "@/store/use-auth-store";
 import { useCartStore } from "@/store/use-cart-store";
 
 interface ProductInfoProps {
@@ -23,7 +30,8 @@ const COLORS = [
 ];
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const user = useAuthStore((s) => s.user);
+  const { data: session } = useSession();
+  const user = session?.user;
   const addItem = useCartStore((s) => s.addItem);
   const router = useRouter();
   const [selectedColor, setSelectedColor] = useState(0);
@@ -37,12 +45,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
   };
 
   const handleAddToCart = () => {
-    if (!user) { router.push("/auth/login"); return; }
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
     addItem(product.id, quantity);
   };
 
   const handleBuyNow = () => {
-    if (!user) { router.push("/auth/login"); return; }
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
     addItem(product.id, quantity);
     router.push("/cart");
   };
@@ -50,7 +64,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
   return (
     <div className="space-y-6">
       {/* Product Name */}
-      <h1 className="font-serif text-2xl sm:text-3xl font-bold text-neutral-900">
+      <h1 className="font-serif text-2xl font-bold text-neutral-900 sm:text-3xl">
         {product.name}
       </h1>
 
@@ -72,7 +86,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Price Section */}
       <div className="flex items-baseline gap-3">
-        <span className="text-2xl font-bold text-brand-500">
+        <span className="text-brand-500 text-2xl font-bold">
           {formatPrice(product.salePrice || product.price)}
         </span>
         {product.salePrice && (
@@ -92,7 +106,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
               onClick={() => setSelectedColor(index)}
               className={cn(
                 "relative h-10 w-10 rounded-full transition-all duration-200",
-                selectedColor === index && "ring-2 ring-offset-2 ring-brand-500"
+                selectedColor === index &&
+                  "ring-brand-500 ring-2 ring-offset-2",
               )}
               style={{ backgroundColor: color.hex }}
               aria-label={`Select ${color.name}`}
@@ -106,11 +121,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Quantity Section */}
       <div className="space-y-3">
         <h3 className="font-medium text-neutral-900">SỐ LƯỢNG</h3>
-        <div className="flex items-center border border-neutral-200 rounded-lg w-fit">
+        <div className="flex w-fit items-center rounded-lg border border-neutral-200">
           <button
             onClick={() => handleQuantityChange(-1)}
             disabled={quantity <= 1}
-            className="flex items-center justify-center w-10 h-10 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-10 w-10 items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Decrease quantity"
           >
             <Minus size={18} />
@@ -121,7 +136,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <button
             onClick={() => handleQuantityChange(1)}
             disabled={quantity >= 10}
-            className="flex items-center justify-center w-10 h-10 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-10 w-10 items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Increase quantity"
           >
             <Plus size={18} />
@@ -151,7 +166,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Trust Badges */}
-      <div className="space-y-3 pt-4 border-t border-neutral-200">
+      <div className="space-y-3 border-t border-neutral-200 pt-4">
         <div className="flex items-center gap-3 text-sm text-neutral-600">
           <Truck size={20} className="text-brand-500 flex-shrink-0" />
           <span>Miễn phí vận chuyển cho đơn hàng từ 500k</span>

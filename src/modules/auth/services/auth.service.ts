@@ -1,74 +1,49 @@
-import { USERS_MOCK } from "../data/users.mock";
-import type { AuthResult, LoginPayload, RegisterPayload, User } from "../types";
+"use server";
 
-// In-memory registry so new registrations survive within a session.
-// Resets on page reload — replace with API call when backend is ready.
-const users = [...USERS_MOCK];
-let nextId = users.length + 1;
+import bcrypt from "bcryptjs";
 
-function toUser(stored: (typeof users)[number]): User {
+import { prisma } from "@/lib/db";
+
+import { registerSchema } from "../schemas";
+import type { AuthResult } from "../types";
+
+/**
+ * Creates a new user with a bcrypt-hashed password.
+ * Validation mirrors the client form; returns a discriminated result
+ * so the UI can surface a localized error message.
+ */
+export async function registerUser(input: unknown): Promise<AuthResult> {
+  const parsed = registerSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+    };
+  }
+
+  const { name, email, password } = parsed.data;
+  const normalizedEmail = email.toLowerCase();
+
+  const existing = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+  if (existing) {
+    return { success: false, error: "Email đã được sử dụng" };
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: { name, email: normalizedEmail, password: hashed },
+    select: { id: true, name: true, email: true, image: true },
+  });
+
   return {
-    id: stored.id,
-    name: stored.name,
-    email: stored.email,
-    avatar: stored.avatar,
+    success: true,
+    data: {
+      id: user.id,
+      name: user.name ?? "",
+      email: user.email,
+      image: user.image ?? undefined,
+    },
   };
 }
-
-// Simulate async network delay
-function delay(ms = 600): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-export const authService = {
-  async login(payload: LoginPayload): Promise<AuthResult> {
-    await delay();
-
-    if (!payload.email || !payload.password) {
-      return { success: false, error: "Vui lòng nhập email và mật khẩu" };
-    }
-
-    const found = users.find(
-      (u) =>
-        u.email.toLowerCase() === payload.email.toLowerCase() &&
-        u.password === payload.password,
-    );
-
-    if (!found) {
-      return { success: false, error: "Email hoặc mật khẩu không đúng" };
-    }
-
-    return { success: true, data: toUser(found) };
-  },
-
-  async register(payload: RegisterPayload): Promise<AuthResult> {
-    await delay();
-
-    if (!payload.name.trim()) {
-      return { success: false, error: "Vui lòng nhập họ tên" };
-    }
-    if (!payload.email.trim()) {
-      return { success: false, error: "Vui lòng nhập email" };
-    }
-    if (payload.password.length < 6) {
-      return { success: false, error: "Mật khẩu tối thiểu 6 ký tự" };
-    }
-
-    const exists = users.some(
-      (u) => u.email.toLowerCase() === payload.email.toLowerCase(),
-    );
-    if (exists) {
-      return { success: false, error: "Email đã được sử dụng" };
-    }
-
-    const newUser = {
-      id: `user_${String(++nextId).padStart(2, "0")}`,
-      name: payload.name.trim(),
-      email: payload.email.trim().toLowerCase(),
-      password: payload.password,
-    };
-    users.push(newUser);
-
-    return { success: true, data: toUser(newUser) };
-  },
-};

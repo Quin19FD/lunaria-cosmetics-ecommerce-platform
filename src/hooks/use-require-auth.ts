@@ -1,7 +1,6 @@
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useCallback } from "react";
-
-import { useAuthStore } from "@/store/use-auth-store";
 
 /**
  * Returns a guard function that checks if user is logged in.
@@ -9,7 +8,8 @@ import { useAuthStore } from "@/store/use-auth-store";
  * If yes, returns true so the caller can proceed.
  */
 export function useRequireAuth() {
-  const user = useAuthStore((s) => s.user);
+  const { data: session } = useSession();
+  const user = session?.user ?? null;
   const router = useRouter();
 
   const requireAuth = useCallback(() => {

@@ -2,17 +2,18 @@
 
 import { Camera } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store/use-auth-store";
 
 export function ProfileForm() {
   const mounted = useMounted();
-  const user = useAuthStore((state) => state.user);
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -82,10 +83,10 @@ export function ProfileForm() {
         <div className="mb-8 flex items-center gap-6">
           <div className="relative">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100">
-              {user?.avatar ? (
+              {user?.image ? (
                 <Image
-                  src={user.avatar}
-                  alt={user.name}
+                  src={user.image}
+                  alt={user.name ?? ""}
                   width={80}
                   height={80}
                   className="h-20 w-20 rounded-full object-cover"
@@ -99,7 +100,7 @@ export function ProfileForm() {
             <button
               onClick={handleAvatarChange}
               className={cn(
-                "absolute bottom-0 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-white transition-all hover:bg-brand-600 cursor-pointer"
+                "bg-brand-500 hover:bg-brand-600 absolute right-0 bottom-0 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-white transition-all",
               )}
               aria-label="Change avatar"
               type="button"
@@ -165,11 +166,7 @@ export function ProfileForm() {
 
           {/* Submit Button */}
           <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              variant="default"
-            >
+            <Button type="submit" disabled={isLoading} variant="default">
               {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
           </div>
