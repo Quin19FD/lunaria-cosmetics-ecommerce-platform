@@ -10,10 +10,12 @@ import { catalogService } from "@/modules/catalog";
 import { productService } from "@/modules/products";
 import { testimonialService } from "@/modules/testimonials";
 
-export default function HomePage() {
-  const categories = catalogService.getFeaturedCategories();
-  const bestSellers = productService.getBestSellers();
-  const testimonials = testimonialService.getFeatured();
+export default async function HomePage() {
+  const [categories, bestSellers, testimonials] = await Promise.all([
+    catalogService.getFeaturedCategories(),
+    productService.getBestSellers(),
+    testimonialService.getFeatured(),
+  ]);
 
   return (
     <>

@@ -1,22 +1,44 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { CheckoutSuccess } from "@/features/checkout";
+import type { CheckoutSuccessOrder } from "@/features/checkout";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Đặt hàng thành công",
 };
 
-export default function CheckoutSuccessPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
-        </div>
+interface CheckoutSuccessPageProps {
+  searchParams: Promise<{ order?: string }>;
+}
+
+export default async function CheckoutSuccessPage({
+  searchParams,
+}: CheckoutSuccessPageProps) {
+  const { order: orderId } = await searchParams;
+
+  const order = orderId
+    ? await prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+          items: { include: { variant: { include: { product: true } } } },
+          address: true,
+        },
+      })
+    : null;
+
+  const view: CheckoutSuccessOrder | null = order
+    ? {
+        id: order.id,
+        total: order.total,
+        items: order.items.map((item) => ({
+          id: item.id,
+          name: item.variant.product.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
       }
-    >
-      <CheckoutSuccess />
-    </Suspense>
-  );
+    : null;
+
+  return <CheckoutSuccess order={view} />;
 }

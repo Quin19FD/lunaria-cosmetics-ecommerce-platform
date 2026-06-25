@@ -15,14 +15,18 @@ export const collectionService = {
     return COLLECTIONS_MOCK.find((c) => c.slug === slug);
   },
 
-  getProducts(
+  async getProducts(
     collection: Collection,
     page = 1,
-  ): { data: Product[]; total: number; page: number; totalPages: number } {
-    const allProducts = productService.getAll();
-    const products = collection.productIds
-      .map((id) => allProducts.find((p) => p.id === id))
-      .filter((p): p is Product => p != null);
+  ): Promise<{
+    data: Product[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const products = await productService.getProductsBySlugs(
+      collection.productSlugs,
+    );
 
     const total = products.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));

@@ -2,12 +2,15 @@
 
 import { CreditCard, Landmark, Truck, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
-import { productService } from "@/modules/products";
+import { getCartProducts } from "@/modules/cart/actions";
+import { placeOrder } from "@/modules/orders/actions";
+import type { Product } from "@/modules/products";
 import { useCartStore } from "@/store/use-cart-store";
 
 const PAYMENT_METHODS = [
@@ -20,6 +23,7 @@ const SHIPPING_THRESHOLD = 500000;
 
 export function CheckoutForm() {
   const router = useRouter();
+  const { data: session } = useSession();
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
 
@@ -32,17 +36,39 @@ export function CheckoutForm() {
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState("cod");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
 
-  const cartProducts = useMemo(
-    () =>
-      items
-        .map((item) => {
-          const product = productService.getById(item.productId);
-          return product ? { product, quantity: item.quantity } : null;
-        })
-        .filter((x): x is NonNullable<typeof x> => x != null),
-    [items],
-  );
+  const ids = useMemo(() => items.map((i) => i.productId), [items]);
+
+  useEffect(() => {
+    if (ids.length === 0) {
+      setProducts([]);
+      setProductsLoading(false);
+      return;
+    }
+    let active = true;
+    setProductsLoading(true);
+    getCartProducts(ids).then((result) => {
+      if (!active) return;
+      setProducts(result);
+      setProductsLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ids]);
+
+  const cartProducts = useMemo(() => {
+    const byId = new Map(products.map((p) => [p.id, p]));
+    return items
+      .map((item) => {
+        const product = byId.get(item.productId);
+        return product ? { product, quantity: item.quantity } : null;
+      })
+      .filter((x): x is NonNullable<typeof x> => x != null);
+  }, [products, items]);
 
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity,
@@ -54,18 +80,51 @@ export function CheckoutForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
 
-    const orderCode = `LB-${Math.floor(10000 + Math.random() * 90000)}`;
-    clearCart();
-    router.push(`/checkout/success?order=${orderCode}&total=${total}`);
+    if (!session?.user) {
+      router.push("/auth/login?callback=/checkout");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    const result = await placeOrder({
+      items: items.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+      })),
+      fullName,
+      phone,
+      street,
+      district,
+      city,
+      note,
+    });
+
+    if (result.ok) {
+      clearCart();
+      router.push(`/checkout/success?order=${result.orderId}`);
+    } else {
+      setError(result.error);
+      setIsLoading(false);
+    }
+  }
+
+  if (productsLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="border-brand-500 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+      </div>
+    );
   }
 
   if (cartProducts.length === 0) {
     return (
       <div className="py-20 text-center">
-        <p className="text-neutral-500">Giỏ hàng trống, không thể thanh toán.</p>
+        <p className="text-neutral-500">
+          Giỏ hàng trống, không thể thanh toán.
+        </p>
         <Button className="mt-4" onClick={() => router.push("/products")}>
           Tiếp tục mua sắm
         </Button>
@@ -81,7 +140,7 @@ export function CheckoutForm() {
           {/* Shipping info */}
           <section className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-2">
-              <Truck className="h-5 w-5 text-brand-500" />
+              <Truck className="text-brand-500 h-5 w-5" />
               <h2 className="font-serif text-lg font-bold text-neutral-900">
                 Thông tin giao hàng
               </h2>
@@ -154,7 +213,7 @@ export function CheckoutForm() {
                   placeholder="Ghi chú cho người giao hàng (không bắt buộc)"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="focus:border-brand-500 focus:ring-brand-500 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:ring-1 focus:outline-none"
                 />
               </div>
             </div>
@@ -163,7 +222,7 @@ export function CheckoutForm() {
           {/* Payment method */}
           <section className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-brand-500" />
+              <CreditCard className="text-brand-500 h-5 w-5" />
               <h2 className="font-serif text-lg font-bold text-neutral-900">
                 Phương thức thanh toán
               </h2>
@@ -196,7 +255,7 @@ export function CheckoutForm() {
                     )}
                   >
                     {payment === m.id && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-brand-500" />
+                      <div className="bg-brand-500 h-2.5 w-2.5 rounded-full" />
                     )}
                   </div>
                   <m.icon className="h-5 w-5 text-neutral-500" />
@@ -260,11 +319,13 @@ export function CheckoutForm() {
               </div>
               <div className="flex justify-between border-t border-neutral-100 pt-3">
                 <span className="font-semibold">Tổng cộng</span>
-                <span className="text-lg font-bold text-brand-500">
+                <span className="text-brand-500 text-lg font-bold">
                   {formatPrice(total)}
                 </span>
               </div>
             </div>
+
+            {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
 
             <Button
               type="submit"

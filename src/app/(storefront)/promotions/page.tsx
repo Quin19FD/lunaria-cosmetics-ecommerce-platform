@@ -6,17 +6,20 @@ import {
   PromoHero,
   PromoNewsletter,
 } from "@/features/promotions";
+import { promotionService } from "@/modules/promotions";
 
 export const metadata: Metadata = {
   title: "Khuyến mãi",
   description: "Ưu đãi đặc biệt và Flash Deals từ Lunaria Beauty",
 };
 
-export default function PromotionsPage() {
+export default async function PromotionsPage() {
+  const deals = await promotionService.getFlashDeals();
+
   return (
     <>
       <PromoHero />
-      <FlashDeals />
+      <FlashDeals deals={deals} />
       <PromoCards />
       <PromoNewsletter />
     </>

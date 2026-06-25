@@ -128,6 +128,8 @@ model Product {
   howToUse    String? @db.Text
   isActive    Boolean @default(true)
   isFeatured  Boolean @default(false)
+  badge       String?
+  skinTypes   String[]
 
   categoryId String
   brandId    String

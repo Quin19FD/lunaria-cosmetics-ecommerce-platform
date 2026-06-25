@@ -13,16 +13,18 @@ export const promotionService = {
     return PROMOTIONS_MOCK.find((p) => p.id === id);
   },
 
-  getFlashDeals(): (FlashDeal & { product: Product })[] {
+  async getFlashDeals(): Promise<(FlashDeal & { product: Product })[]> {
+    const products = await productService.getProductsBySlugs(
+      FLASH_DEALS_MOCK.map((deal) => deal.productSlug),
+    );
+    const bySlug = new Map(products.map((p) => [p.slug, p]));
     return FLASH_DEALS_MOCK.map((deal) => {
-      const product = productService.getById(deal.productId);
+      const product = bySlug.get(deal.productSlug);
       return product ? { ...deal, product } : null;
-    }).filter((d): d is NonNullable<typeof d> => d != null);
+    }).filter((d): d is FlashDeal & { product: Product } => d != null);
   },
 
-  getPromotionProducts(promo: Promotion): Product[] {
-    return promo.productIds
-      .map((id) => productService.getById(id))
-      .filter((p): p is Product => p != null);
+  getPromotionProducts(promo: Promotion): Promise<Product[]> {
+    return productService.getProductsBySlugs(promo.productSlugs);
   },
 };

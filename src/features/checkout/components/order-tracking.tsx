@@ -8,14 +8,12 @@ import {
   Package,
   Truck,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
-import { productService } from "@/modules/products";
 
 interface TrackingStep {
   icon: React.ElementType;
@@ -25,14 +23,44 @@ interface TrackingStep {
 }
 
 const MOCK_STEPS: TrackingStep[] = [
-  { icon: CheckCircle, label: "Đơn hàng đã xác nhận", time: "12/10/2023 14:30", done: true },
-  { icon: CreditCard, label: "Đã thanh toán", time: "12/10/2023 14:32", done: true },
-  { icon: Package, label: "Đang chuẩn bị hàng", time: "13/10/2023 09:00", done: true },
-  { icon: Truck, label: "Đang giao hàng", time: "14/10/2023 08:15", done: false },
+  {
+    icon: CheckCircle,
+    label: "Đơn hàng đã xác nhận",
+    time: "12/10/2023 14:30",
+    done: true,
+  },
+  {
+    icon: CreditCard,
+    label: "Đã thanh toán",
+    time: "12/10/2023 14:32",
+    done: true,
+  },
+  {
+    icon: Package,
+    label: "Đang chuẩn bị hàng",
+    time: "13/10/2023 09:00",
+    done: true,
+  },
+  {
+    icon: Truck,
+    label: "Đang giao hàng",
+    time: "14/10/2023 08:15",
+    done: false,
+  },
   { icon: MapPin, label: "Đã giao thành công", time: "", done: false },
 ];
 
-const MOCK_ITEMS = ["prod_01", "prod_03", "prod_05"];
+interface SampleItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+const SAMPLE_ITEMS: SampleItem[] = [
+  { name: "Serum Vitamin C Sáng Da", quantity: 1, price: 450000 },
+  { name: "Kem Dưỡng Ẩm Hyaluronic", quantity: 1, price: 380000 },
+  { name: "Nước Tẩy Trang Dịu Nhẹ", quantity: 1, price: 220000 },
+];
 
 export function OrderTracking() {
   const [orderCode, setOrderCode] = useState("");
@@ -43,15 +71,11 @@ export function OrderTracking() {
     if (orderCode.trim()) setTracked(true);
   }
 
-  const products = MOCK_ITEMS.map((id) => productService.getById(id)).filter(
-    (p): p is NonNullable<typeof p> => p != null,
-  );
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
       {/* Header */}
       <div className="text-center">
-        <Package className="mx-auto h-10 w-10 text-brand-500" />
+        <Package className="text-brand-500 mx-auto h-10 w-10" />
         <h1 className="mt-4 font-serif text-2xl font-bold text-neutral-900 sm:text-3xl">
           Theo dõi đơn hàng
         </h1>
@@ -84,7 +108,7 @@ export function OrderTracking() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm text-neutral-500">Mã đơn hàng</p>
-                <p className="text-lg font-bold text-brand-500">
+                <p className="text-brand-500 text-lg font-bold">
                   {orderCode || "#LB-98321"}
                 </p>
               </div>
@@ -157,28 +181,21 @@ export function OrderTracking() {
               Sản phẩm trong đơn hàng
             </h3>
             <div className="space-y-3">
-              {products.map((p) => (
+              {SAMPLE_ITEMS.map((item) => (
                 <div
-                  key={p.id}
-                  className="flex items-center gap-3 rounded-xl border border-neutral-100 p-3"
+                  key={item.name}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-neutral-100 p-3"
                 >
-                  <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
-                    <Image
-                      src={p.image}
-                      alt={p.name}
-                      fill
-                      className="object-cover"
-                      sizes="56px"
-                    />
-                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-neutral-900">
-                      {p.name}
+                      {item.name}
                     </p>
-                    <p className="text-xs text-neutral-400">SL: 1</p>
+                    <p className="text-xs text-neutral-400">
+                      SL: {item.quantity}
+                    </p>
                   </div>
-                  <span className="text-sm font-semibold text-brand-500">
-                    {formatPrice(p.price)}
+                  <span className="text-brand-500 text-sm font-semibold">
+                    {formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
               ))}

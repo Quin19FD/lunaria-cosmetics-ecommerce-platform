@@ -2,6 +2,7 @@
 
 import { Camera } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
@@ -9,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
+import { updateProfile } from "@/modules/account/actions";
 
 export function ProfileForm() {
   const mounted = useMounted();
+  const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -19,11 +22,11 @@ export function ProfileForm() {
     name: "",
     email: "",
     phone: "",
-    birthDate: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Initialize form from user data
   useEffect(() => {
@@ -32,7 +35,6 @@ export function ProfileForm() {
         name: user.name || "",
         email: user.email || "",
         phone: "",
-        birthDate: "",
       });
     }
   }, [user]);
@@ -45,16 +47,26 @@ export function ProfileForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(false);
 
-    // Simulate submission
-    setTimeout(() => {
-      setIsLoading(false);
+    const result = await updateProfile({
+      name: formData.name,
+      phone: formData.phone || undefined,
+    });
+
+    setIsLoading(false);
+
+    if (result.ok) {
       setSuccessMessage(true);
+      router.refresh();
       setTimeout(() => setSuccessMessage(false), 2000);
-    }, 500);
+    } else {
+      setErrorMessage(result.error);
+    }
   };
 
   const handleAvatarChange = () => {
@@ -145,22 +157,19 @@ export function ProfileForm() {
               onChange={handleInputChange}
               placeholder="Nhập số điện thoại"
             />
-
-            <Input
-              label="Ngày sinh"
-              id="birthDate"
-              name="birthDate"
-              type="date"
-              value={formData.birthDate}
-              onChange={handleInputChange}
-              placeholder="Chọn ngày sinh"
-            />
           </div>
 
           {/* Success Message */}
           {successMessage && (
             <div className="rounded-lg bg-green-50 p-4 text-sm text-green-700">
               ✓ Thông tin đã được cập nhật thành công!
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+              {errorMessage}
             </div>
           )}
 

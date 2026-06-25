@@ -1,22 +1,37 @@
 "use client";
 
+import { Star } from "lucide-react";
 import { useState } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import type { ProductReview } from "@/modules/products/review.actions";
+
+import { ReviewForm } from "./review-form";
 
 export interface ProductTabsProps {
   description: string;
-  reviewCount: number;
+  ingredients?: string | null;
+  howToUse?: string | null;
+  reviews: ProductReview[];
+  productId: string;
+  slug: string;
 }
 
-export const ProductTabs = ({ description, reviewCount }: ProductTabsProps) => {
+export const ProductTabs = ({
+  description,
+  ingredients,
+  howToUse,
+  reviews,
+  productId,
+  slug,
+}: ProductTabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
     { id: 0, label: "Mô tả" },
     { id: 1, label: "Thành phần" },
-    { id: 2, label: "Hướng dấn sử dụng" },
-    { id: 3, label: `Đánh giá (${reviewCount})` },
+    { id: 2, label: "Hướng dẫn sử dụng" },
+    { id: 3, label: `Đánh giá (${reviews.length})` },
   ];
 
   return (
@@ -29,10 +44,10 @@ export const ProductTabs = ({ description, reviewCount }: ProductTabsProps) => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "py-3 font-medium transition-colors duration-200 border-b-2 border-transparent",
+                "border-b-2 border-transparent py-3 font-medium transition-colors duration-200",
                 activeTab === tab.id
-                  ? "text-brand-500 border-b-2 border-brand-500"
-                  : "text-neutral-500 hover:text-neutral-700"
+                  ? "text-brand-500 border-brand-500 border-b-2"
+                  : "text-neutral-500 hover:text-neutral-700",
               )}
             >
               {tab.label}
@@ -42,93 +57,83 @@ export const ProductTabs = ({ description, reviewCount }: ProductTabsProps) => {
       </div>
 
       {/* Tab Content */}
-      <div className="prose prose-sm text-neutral-600 leading-relaxed">
+      <div className="prose prose-sm leading-relaxed text-neutral-600">
         {activeTab === 0 && (
           <div>
-            <p>{description}</p>
-            <ul className="list-disc pl-5 space-y-2 mt-4">
-              <li>
-                Lớp finish mịn màng, không gây khô môi nhờ chiết xuất từ dầu
-                Jojoba và Vitamin E.
-              </li>
-              <li>
-                Bám màu lên đến 8 tiếng, không để lại vết vệt hay loang lổ khi
-                ăn uống.
-              </li>
-              <li>
-                Thiết kế vỏ son sang trọng với gam màu vàng hồng đặc trưng của
-                LUNARIA.
-              </li>
-              <li>
-                Công thức nhẹ môi, tạo cảm giác thoải mái suốt cả ngày dài.
-              </li>
-            </ul>
+            <p className="whitespace-pre-line">{description}</p>
           </div>
         )}
 
         {activeTab === 1 && (
           <div>
-            <p>
-              Thành phần chính: Cera Microcristallina, Ozokerite, Lanolin,
-              Synthetic Fluorphlogopite, Jojoba Oil, Vitamin E, Iron Oxides
-              (CI 77491, CI 77492, CI 77499), Titanium Dioxide (CI 77891).
-            </p>
-            <ul className="list-disc pl-5 space-y-2 mt-4">
-              <li>
-                <strong>Cera Microcristallina:</strong> Tạo độ bền vững cho son.
-              </li>
-              <li>
-                <strong>Jojoba Oil:</strong> Dưỡng ẩm tự nhiên, giữ môi mềm mại
-                suốt ngày.
-              </li>
-              <li>
-                <strong>Vitamin E:</strong> Chống oxy hóa, bảo vệ môi khỏi tác
-                động của tia UV.
-              </li>
-              <li>
-                <strong>Iron Oxides:</strong> Tạo màu sắc tự nhiên, an toàn cho
-                da.
-              </li>
-            </ul>
+            {ingredients ? (
+              <p className="whitespace-pre-line">{ingredients}</p>
+            ) : (
+              <p className="text-neutral-500">
+                Chưa có thông tin thành phần cho sản phẩm này.
+              </p>
+            )}
           </div>
         )}
 
         {activeTab === 2 && (
           <div>
-            <p>
-              Hướng dẫn sử dụng son môi LUNARIA để đạt hiệu quả tốt nhất:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 mt-4">
-              <li>
-                Bước 1: Làm sạch và dưỡng ẩm cho môi bằng lip balm trước khi
-                thoa son.
-              </li>
-              <li>
-                Bước 2: Thoa từ từ một lớp son mỏng từ giữa môi dưới ra ngoài
-                hai bên.
-              </li>
-              <li>
-                Bước 3: Nhấc môi lên nhẹ nhàng để phân bổ đều màu sắc trên toàn
-                bộ môi.
-              </li>
-              <li>
-                Bước 4: Để khô tự nhiên trong 30 giây để son bám lâu hơn.
-              </li>
-              <li>
-                Mẹo: Sử dụng chì kẻ môi cùng tông màu để tăng độ bền màu và
-                tạo độ định nghĩa rõ nét hơn.
-              </li>
-            </ul>
+            {howToUse ? (
+              <p className="whitespace-pre-line">{howToUse}</p>
+            ) : (
+              <p className="text-neutral-500">
+                Chưa có hướng dẫn sử dụng cho sản phẩm này.
+              </p>
+            )}
           </div>
         )}
 
         {activeTab === 3 && (
           <div>
-            <p className="text-neutral-500">
-              {reviewCount === 0
-                ? "Chưa có đánh giá nào."
-                : `Hiện có ${reviewCount} đánh giá cho sản phẩm này.`}
-            </p>
+            {reviews.length === 0 ? (
+              <p className="text-neutral-500">Chưa có đánh giá</p>
+            ) : (
+              <ul className="space-y-6">
+                {reviews.map((review) => (
+                  <li
+                    key={review.id}
+                    className="border-b border-neutral-100 pb-6 last:border-0"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-neutral-900">
+                        {review.authorName}
+                      </span>
+                      <span className="text-xs text-neutral-400">
+                        {formatDate(review.createdAt)}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={16}
+                          className={cn(
+                            i < review.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-neutral-300",
+                          )}
+                        />
+                      ))}
+                    </div>
+                    {review.title && (
+                      <p className="mt-2 font-medium text-neutral-800">
+                        {review.title}
+                      </p>
+                    )}
+                    {review.comment && (
+                      <p className="mt-1 text-neutral-600">{review.comment}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <ReviewForm productId={productId} slug={slug} />
           </div>
         )}
       </div>

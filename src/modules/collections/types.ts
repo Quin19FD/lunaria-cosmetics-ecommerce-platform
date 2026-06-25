@@ -11,5 +11,5 @@ export interface Collection {
   ctaLabel: string;
   heroImage: string;
   cardImage: string;
-  productIds: string[];
+  productSlugs: string[];
 }

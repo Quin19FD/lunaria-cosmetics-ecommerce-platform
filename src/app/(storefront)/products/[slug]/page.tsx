@@ -7,7 +7,9 @@ import {
   ProductTabs,
   RelatedProducts,
 } from "@/features/product-detail";
+import { prisma } from "@/lib/db";
 import { productService } from "@/modules/products";
+import { getProductReviews } from "@/modules/products/review.actions";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -17,7 +19,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = productService.getBySlug(slug);
+  const product = await productService.getBySlug(slug);
   if (!product) return { title: "Sản phẩm không tìm thấy" };
 
   return {
@@ -26,16 +28,24 @@ export async function generateMetadata({
   };
 }
 
-export function generateStaticParams() {
-  return productService.getAll().map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const products = await productService.getAll();
+  return products.map((p) => ({ slug: p.slug }));
 }
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = productService.getBySlug(slug);
+  const product = await productService.getBySlug(slug);
   if (!product) notFound();
 
-  const related = productService.getRelated(product, 4);
+  const [related, reviews, details] = await Promise.all([
+    productService.getRelated(product, 4),
+    getProductReviews(product.id),
+    prisma.product.findUnique({
+      where: { slug },
+      select: { ingredients: true, howToUse: true },
+    }),
+  ]);
 
   return (
     <>
@@ -52,7 +62,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         <div className="mt-12">
           <ProductTabs
             description={product.description}
-            reviewCount={product.reviewCount}
+            ingredients={details?.ingredients}
+            howToUse={details?.howToUse}
+            reviews={reviews}
+            productId={product.id}
+            slug={product.slug}
           />
         </div>
       </div>

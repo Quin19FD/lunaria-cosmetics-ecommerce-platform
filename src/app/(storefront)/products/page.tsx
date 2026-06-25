@@ -1,19 +1,23 @@
 "use client";
 
 import { SlidersHorizontal, X } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ProductCard } from "@/components/shared/product-card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Pagination,
   ProductFilters,
   ProductsSortBar,
 } from "@/features/products";
-import { productService } from "@/modules/products";
+import type { Category } from "@/modules/catalog";
 import type { SkinType, SortOption } from "@/modules/products";
-
-const FILTER_CATEGORIES = productService.getCategories();
+import {
+  getFilteredProducts,
+  getFilterCategories,
+} from "@/modules/products/actions";
+import type { ProductListResult } from "@/modules/products/services/product.service";
 
 export default function ProductsPage() {
   const [category, setCategory] = useState<string | null>(null);
@@ -22,16 +26,39 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const result = useMemo(
-    () =>
-      productService.getFiltered({
-        category: category ?? undefined,
-        skinType: skinType ?? undefined,
-        sort,
-        page,
-      }),
-    [category, skinType, sort, page],
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [result, setResult] = useState<ProductListResult | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Load filter categories once.
+  useEffect(() => {
+    let active = true;
+    getFilterCategories().then((cats) => {
+      if (active) setCategories(cats);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Re-fetch the product list whenever a filter, sort, or page changes.
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getFilteredProducts({
+      category: category ?? undefined,
+      skinType: skinType ?? undefined,
+      sort,
+      page,
+    }).then((res) => {
+      if (!active) return;
+      setResult(res);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [category, skinType, sort, page]);
 
   const handleCategoryChange = useCallback((cat: string | null) => {
     setCategory(cat);
@@ -55,14 +82,14 @@ export default function ProductsPage() {
         sort={sort}
         onSortChange={handleSortChange}
         onToggleFilters={() => setShowMobileFilters(true)}
-        totalProducts={result.total}
+        totalProducts={result?.total ?? 0}
       />
 
       <div className="mt-6 flex gap-8">
         {/* Desktop sidebar */}
         <aside className="hidden w-60 flex-shrink-0 lg:block">
           <ProductFilters
-            categories={FILTER_CATEGORIES}
+            categories={categories}
             activeCategory={category}
             activeSkinType={skinType}
             onCategoryChange={handleCategoryChange}
@@ -93,7 +120,7 @@ export default function ProductsPage() {
               </div>
               <div className="flex-1 overflow-y-auto p-4">
                 <ProductFilters
-                  categories={FILTER_CATEGORIES}
+                  categories={categories}
                   activeCategory={category}
                   activeSkinType={skinType}
                   onCategoryChange={handleCategoryChange}
@@ -106,7 +133,13 @@ export default function ProductsPage() {
 
         {/* Product grid */}
         <div className="flex-1">
-          {result.data.length > 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
+              ))}
+            </div>
+          ) : result && result.data.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
                 {result.data.map((product) => (

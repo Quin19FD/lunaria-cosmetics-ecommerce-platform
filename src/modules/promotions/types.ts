@@ -8,11 +8,11 @@ export interface Promotion {
   endDate: string;
   image: string;
   color: "pink" | "purple" | "amber" | "emerald";
-  productIds: string[];
+  productSlugs: string[];
 }
 
 export interface FlashDeal {
-  productId: string;
+  productSlug: string;
   originalPrice: number;
   dealPrice: number;
   sold: number;

@@ -1,38 +1,65 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CartItemRow, CartSummary, EmptyCart } from "@/features/cart";
 import { useMounted } from "@/hooks/use-mounted";
-import { productService } from "@/modules/products";
+import { getCartProducts } from "@/modules/cart/actions";
+import type { Product } from "@/modules/products";
 import { useCartStore } from "@/store/use-cart-store";
 
 export default function CartPage() {
   const mounted = useMounted();
   const items = useCartStore((s) => s.items);
 
-  const cartProducts = useMemo(
-    () =>
-      items
-        .map((item) => {
-          const product = productService.getById(item.productId);
-          return product ? { product, quantity: item.quantity } : null;
-        })
-        .filter((x): x is NonNullable<typeof x> => x != null),
-    [items],
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const ids = useMemo(() => items.map((i) => i.productId), [items]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (ids.length === 0) {
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    setLoading(true);
+    getCartProducts(ids).then((result) => {
+      if (!active) return;
+      setProducts(result);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [mounted, ids]);
+
+  const cartProducts = useMemo(() => {
+    const byId = new Map(products.map((p) => [p.id, p]));
+    return items
+      .map((item) => {
+        const product = byId.get(item.productId);
+        return product ? { product, quantity: item.quantity } : null;
+      })
+      .filter((x): x is NonNullable<typeof x> => x != null);
+  }, [products, items]);
 
   const subtotal = cartProducts.reduce(
     (sum, { product, quantity }) => sum + product.price * quantity,
     0,
   );
 
-  const totalItems = cartProducts.reduce((sum, { quantity }) => sum + quantity, 0);
+  const totalItems = cartProducts.reduce(
+    (sum, { quantity }) => sum + quantity,
+    0,
+  );
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+        <div className="border-brand-500 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     );
   }

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   CheckCircle,
   ChevronRight,
@@ -9,7 +7,6 @@ import {
   Truck,
 } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
@@ -22,10 +19,18 @@ const ORDER_STEPS = [
   { icon: MapPin, label: "Đã giao", active: false },
 ];
 
-export function CheckoutSuccess() {
-  const searchParams = useSearchParams();
-  const orderCode = searchParams.get("order") ?? "#LB-00000";
-  const total = Number(searchParams.get("total") ?? 0);
+export interface CheckoutSuccessOrder {
+  id: string;
+  total: number;
+  items: { id: string; name: string; quantity: number; unitPrice: number }[];
+}
+
+interface CheckoutSuccessProps {
+  order: CheckoutSuccessOrder | null;
+}
+
+export function CheckoutSuccess({ order }: CheckoutSuccessProps) {
+  const orderCode = order ? order.id.slice(0, 8).toUpperCase() : null;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
@@ -44,18 +49,45 @@ export function CheckoutSuccess() {
 
       {/* Order info card */}
       <div className="mt-8 rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
-        <div className="flex flex-col items-center gap-1 border-b border-neutral-100 pb-5 text-center">
-          <p className="text-sm text-neutral-500">Mã đơn hàng</p>
-          <p className="text-xl font-bold text-brand-500">{orderCode}</p>
-          {total > 0 && (
+        {order && (
+          <div className="flex flex-col items-center gap-1 border-b border-neutral-100 pb-5 text-center">
+            <p className="text-sm text-neutral-500">Mã đơn hàng</p>
+            <p className="text-brand-500 text-xl font-bold">#{orderCode}</p>
             <p className="text-sm text-neutral-500">
               Tổng thanh toán:{" "}
               <span className="font-semibold text-neutral-900">
-                {formatPrice(total)}
+                {formatPrice(order.total)}
               </span>
             </p>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Ordered items */}
+        {order && order.items.length > 0 && (
+          <div className="mt-6 space-y-3 border-b border-neutral-100 pb-6">
+            <h3 className="text-sm font-semibold text-neutral-900">
+              Sản phẩm đã đặt
+            </h3>
+            {order.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-neutral-900">
+                    {item.name}
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    SL: {item.quantity}
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-neutral-700">
+                  {formatPrice(item.unitPrice * item.quantity)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Timeline */}
         <div className="mt-6">

@@ -32,10 +32,15 @@ export default async function CollectionDetailPage({
   const collection = collectionService.getBySlug(slug);
   if (!collection) notFound();
 
+  const { data: products, total } = await collectionService.getProducts(
+    collection,
+    1,
+  );
+
   return (
     <>
       <CollectionHero collection={collection} />
-      <CollectionProducts collection={collection} />
+      <CollectionProducts products={products} total={total} />
     </>
   );
 }
