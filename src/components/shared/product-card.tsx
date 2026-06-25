@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { AddToCartButton } from "@/components/shared/add-to-cart-button";
 import { cn, formatPrice } from "@/lib/utils";
-import type { Product } from "@/modules/products"
+import type { Product } from "@/modules/products";
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +22,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const filledStars = Math.round(product.rating);
 
   const badge = product.badge ? badgeConfig[product.badge] : null;
+  const inStock = product.variants.some((v) => v.stock > 0);
 
   return (
     <Link
@@ -45,7 +46,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         {badge && (
           <div
             className={cn(
-              "absolute left-3 top-3 rounded-lg px-3 py-1 text-xs font-semibold text-white",
+              "absolute top-3 left-3 rounded-lg px-3 py-1 text-xs font-semibold text-white",
               badge.bgColor,
             )}
           >
@@ -57,7 +58,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
       {/* Content Container */}
       <div className="flex flex-1 flex-col gap-2 p-3">
         {/* Category */}
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+        <div className="text-xs font-semibold tracking-wider text-neutral-400 uppercase">
           {product.category}
         </div>
 
@@ -89,7 +90,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
         {/* Price */}
         <div className="flex items-baseline gap-2">
-          <span className="font-bold text-brand-500">
+          <span className="text-brand-500 font-bold">
             {formatPrice(product.price)}
           </span>
           {product.salePrice && (
@@ -99,8 +100,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
 
-        {/* Add to Cart Button */}
-        <AddToCartButton productId={product.id} />
+        <AddToCartButton
+          variantId={inStock ? product.defaultVariantId : null}
+        />
       </div>
     </Link>
   );

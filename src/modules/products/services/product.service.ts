@@ -9,8 +9,10 @@ const PAGE_SIZE = 12;
 const PRODUCT_INCLUDE = {
   category: { select: { name: true, slug: true } },
   brand: { select: { name: true } },
+  variants: {
+    select: { id: true, name: true, price: true, salePrice: true, stock: true },
+  },
   images: { select: { url: true }, orderBy: { position: "asc" } },
-  variants: { select: { price: true, salePrice: true, stock: true } },
   reviews: { where: { isVisible: true }, select: { rating: true } },
 } satisfies Prisma.ProductInclude;
 
@@ -19,6 +21,22 @@ type ProductRecord = Prisma.ProductGetPayload<{
 }>;
 
 const PLACEHOLDER = "https://placehold.co/600x600/fce7f0/ef3985?text=Lunaria";
+
+function pickDefaultVariant(
+  variants: {
+    id: string;
+    price: number;
+    salePrice: number | null;
+    stock: number;
+  }[],
+): string | null {
+  if (variants.length === 0) return null;
+  const pool = variants.filter((v) => v.stock > 0);
+  const candidates = pool.length ? pool : variants;
+  const eff = (v: { price: number; salePrice: number | null }) =>
+    v.salePrice ?? v.price;
+  return candidates.reduce((min, v) => (eff(v) < eff(min) ? v : min)).id;
+}
 
 function toView(p: ProductRecord): Product {
   const prices = p.variants.map((v) => v.price);
@@ -53,6 +71,14 @@ function toView(p: ProductRecord): Product {
     badge: (p.badge as Product["badge"]) ?? undefined,
     skinTypes: p.skinTypes as SkinType[],
     isActive: p.isActive,
+    variants: p.variants.map((v) => ({
+      id: v.id,
+      name: v.name,
+      price: v.price,
+      salePrice: v.salePrice ?? undefined,
+      stock: v.stock,
+    })),
+    defaultVariantId: pickDefaultVariant(p.variants),
   };
 }
 

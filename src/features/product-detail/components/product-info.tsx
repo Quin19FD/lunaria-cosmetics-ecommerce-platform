@@ -22,26 +22,39 @@ interface ProductInfoProps {
   product: Product;
 }
 
-const COLORS = [
-  { name: "Rose Pink", hex: "#E8A0BF" },
-  { name: "Deep Berry", hex: "#8B2252" },
-  { name: "Coral", hex: "#FF7F50" },
-  { name: "Nude", hex: "#D2B48C" },
-];
-
 export function ProductInfo({ product }: ProductInfoProps) {
   const { data: session } = useSession();
   const user = session?.user;
   const addItem = useCartStore((s) => s.addItem);
   const router = useRouter();
-  const [selectedColor, setSelectedColor] = useState(0);
+  const [selectedVariantId, setSelectedVariantId] = useState(
+    product.defaultVariantId ?? product.variants[0]?.id ?? "",
+  );
   const [quantity, setQuantity] = useState(1);
+
+  const selectedVariant = product.variants.find(
+    (v) => v.id === selectedVariantId,
+  );
+  const effectivePrice = selectedVariant
+    ? (selectedVariant.salePrice ?? selectedVariant.price)
+    : product.price;
+  const originalPrice = selectedVariant?.price ?? product.price;
+  const hasSale =
+    selectedVariant?.salePrice != null &&
+    selectedVariant.salePrice < selectedVariant.price;
+  const stock = selectedVariant?.stock ?? 0;
+  const maxQty = Math.min(10, stock);
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= 10) {
+    if (newQuantity >= 1 && newQuantity <= maxQty) {
       setQuantity(newQuantity);
     }
+  };
+
+  const selectVariant = (id: string) => {
+    setSelectedVariantId(id);
+    setQuantity(1);
   };
 
   const handleAddToCart = () => {
@@ -49,7 +62,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
       router.push("/auth/login");
       return;
     }
-    addItem(product.id, quantity);
+    if (!selectedVariant || stock <= 0) return;
+    addItem(selectedVariant.id, quantity);
   };
 
   const handleBuyNow = () => {
@@ -57,7 +71,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
       router.push("/auth/login");
       return;
     }
-    addItem(product.id, quantity);
+    if (!selectedVariant || stock <= 0) return;
+    addItem(selectedVariant.id, quantity);
     router.push("/cart");
   };
 
@@ -75,7 +90,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <Star
               key={i}
               size={18}
-              className="fill-yellow-400 text-yellow-400"
+              className={cn(
+                i < Math.round(product.rating)
+                  ? "fill-yellow-400 text-yellow-400"
+                  : "fill-neutral-200 text-neutral-200",
+              )}
             />
           ))}
         </div>
@@ -87,36 +106,46 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Price Section */}
       <div className="flex items-baseline gap-3">
         <span className="text-brand-500 text-2xl font-bold">
-          {formatPrice(product.salePrice || product.price)}
+          {formatPrice(effectivePrice)}
         </span>
-        {product.salePrice && (
+        {hasSale && (
           <span className="text-lg text-neutral-400 line-through">
-            {formatPrice(product.price)}
+            {formatPrice(originalPrice)}
           </span>
         )}
       </div>
 
-      {/* Color Section */}
-      <div className="space-y-3">
-        <h3 className="font-medium text-neutral-900">MÀU SẮC</h3>
-        <div className="flex gap-4">
-          {COLORS.map((color, index) => (
-            <button
-              key={color.name}
-              onClick={() => setSelectedColor(index)}
-              className={cn(
-                "relative h-10 w-10 rounded-full transition-all duration-200",
-                selectedColor === index &&
-                  "ring-brand-500 ring-2 ring-offset-2",
-              )}
-              style={{ backgroundColor: color.hex }}
-              aria-label={`Select ${color.name}`}
-              title={color.name}
-            />
-          ))}
+      {/* Variant Section */}
+      {product.variants.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="font-medium text-neutral-900">PHIÊN BẢN</h3>
+          <div className="flex flex-wrap gap-3">
+            {product.variants.map((variant) => {
+              const out = variant.stock <= 0;
+              return (
+                <button
+                  key={variant.id}
+                  type="button"
+                  onClick={() => selectVariant(variant.id)}
+                  disabled={out}
+                  className={cn(
+                    "rounded-lg border px-4 py-2 text-sm font-medium transition-all",
+                    variant.id === selectedVariantId
+                      ? "border-brand-500 bg-brand-50 text-brand-600"
+                      : "border-neutral-200 text-neutral-700 hover:border-neutral-300",
+                    out && "cursor-not-allowed text-neutral-300 line-through",
+                  )}
+                >
+                  {variant.name}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-sm text-neutral-500">
+            {stock > 0 ? `Còn ${stock} sản phẩm` : "Tạm hết hàng"}
+          </p>
         </div>
-        <p className="text-sm text-neutral-600">{COLORS[selectedColor].name}</p>
-      </div>
+      )}
 
       {/* Quantity Section */}
       <div className="space-y-3">
@@ -135,7 +164,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </span>
           <button
             onClick={() => handleQuantityChange(1)}
-            disabled={quantity >= 10}
+            disabled={quantity >= maxQty}
             className="flex h-10 w-10 items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Increase quantity"
           >
@@ -150,6 +179,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           variant="outline"
           size="lg"
           onClick={handleAddToCart}
+          disabled={stock <= 0}
           className="flex-1"
         >
           <ShoppingCart size={20} />
@@ -159,6 +189,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           variant="default"
           size="lg"
           onClick={handleBuyNow}
+          disabled={stock <= 0}
           className="flex-1"
         >
           Mua ngay

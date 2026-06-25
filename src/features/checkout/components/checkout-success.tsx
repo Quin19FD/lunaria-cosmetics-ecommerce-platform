@@ -22,8 +22,16 @@ const ORDER_STEPS = [
 export interface CheckoutSuccessOrder {
   id: string;
   total: number;
+  paymentMethod: "COD" | "BANK" | "CARD";
+  paymentStatus: "UNPAID" | "PAID" | "REFUNDED";
   items: { id: string; name: string; quantity: number; unitPrice: number }[];
 }
+
+const PAYMENT_LABEL: Record<string, string> = {
+  COD: "Thanh toán khi nhận hàng",
+  BANK: "Chuyển khoản ngân hàng",
+  CARD: "Thẻ tín dụng / ghi nợ",
+};
 
 interface CheckoutSuccessProps {
   order: CheckoutSuccessOrder | null;
@@ -59,6 +67,45 @@ export function CheckoutSuccess({ order }: CheckoutSuccessProps) {
                 {formatPrice(order.total)}
               </span>
             </p>
+          </div>
+        )}
+
+        {order && (
+          <div className="mt-6 space-y-2 border-b border-neutral-100 pb-6">
+            <h3 className="text-sm font-semibold text-neutral-900">
+              Thanh toán
+            </h3>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-500">
+                {PAYMENT_LABEL[order.paymentMethod]}
+              </span>
+              <span
+                className={
+                  order.paymentStatus === "PAID"
+                    ? "font-semibold text-emerald-600"
+                    : "font-semibold text-amber-600"
+                }
+              >
+                {order.paymentStatus === "PAID"
+                  ? "Đã thanh toán"
+                  : "Chưa thanh toán"}
+              </span>
+            </div>
+            {order.paymentMethod === "BANK" &&
+              order.paymentStatus !== "PAID" && (
+                <div className="mt-2 rounded-lg bg-neutral-50 p-3 text-xs text-neutral-600">
+                  <p>Vui lòng chuyển khoản theo thông tin sau:</p>
+                  <p className="mt-1">
+                    Ngân hàng: <strong>Vietcombank</strong> · STK:{" "}
+                    <strong>0123456789</strong> · CTK:{" "}
+                    <strong>LUNARIA BEAUTY</strong>
+                  </p>
+                  <p>
+                    Nội dung: <strong>#{orderCode}</strong> · Số tiền:{" "}
+                    <strong>{formatPrice(order.total)}</strong>
+                  </p>
+                </div>
+              )}
           </div>
         )}
 

@@ -243,6 +243,18 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum PaymentMethod {
+  COD
+  BANK
+  CARD
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
 model Order {
   id            String      @id @default(cuid())
   userId        String
@@ -254,6 +266,8 @@ model Order {
   note          String?     @db.Text
   trackingCode  String?
   paymentIntent String?     @unique
+  paymentMethod PaymentMethod @default(COD)
+  paymentStatus PaymentStatus @default(UNPAID)
 
   user      User        @relation(fields: [userId], references: [id])
   items     OrderItem[]
@@ -295,6 +309,8 @@ model Address {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
+
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@map("addresses")

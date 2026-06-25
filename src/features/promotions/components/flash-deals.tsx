@@ -40,9 +40,10 @@ export function FlashDeals({ deals }: FlashDealsProps) {
   const { requireAuth } = useRequireAuth();
   const addItem = useCartStore((s) => s.addItem);
 
-  function handleAdd(productId: string) {
+  function handleAdd(variantId: string | null) {
+    if (!variantId) return;
     if (!requireAuth()) return;
-    addItem(productId);
+    addItem(variantId);
   }
 
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -160,7 +161,7 @@ export function FlashDeals({ deals }: FlashDealsProps) {
 
                 <button
                   type="button"
-                  onClick={() => handleAdd(deal.product.id)}
+                  onClick={() => handleAdd(deal.product.defaultVariantId)}
                   className="bg-brand-500 hover:bg-brand-600 mt-auto flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-[11px] font-medium text-white transition-colors"
                 >
                   <ShoppingCart className="h-3 w-3" />

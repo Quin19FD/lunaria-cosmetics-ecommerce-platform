@@ -31,6 +31,8 @@ export default async function CheckoutSuccessPage({
     ? {
         id: order.id,
         total: order.total,
+        paymentMethod: order.paymentMethod,
+        paymentStatus: order.paymentStatus,
         items: order.items.map((item) => ({
           id: item.id,
           name: item.variant.product.name,

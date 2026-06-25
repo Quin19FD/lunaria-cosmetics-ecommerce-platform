@@ -1,5 +1,13 @@
 export type SkinType = "da-kho" | "da-dau" | "da-nhay-cam" | "da-thuong";
 
+export interface ProductVariantView {
+  id: string;
+  name: string;
+  price: number;
+  salePrice?: number;
+  stock: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -17,6 +25,8 @@ export interface Product {
   badge?: "bestseller" | "new" | "hot" | "sale";
   skinTypes: SkinType[];
   isActive: boolean;
+  variants: ProductVariantView[];
+  defaultVariantId: string | null;
 }
 
 export interface Brand {

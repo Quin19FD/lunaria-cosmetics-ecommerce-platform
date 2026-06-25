@@ -8,9 +8,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, formatPrice } from "@/lib/utils";
-import { getCartProducts } from "@/modules/cart/actions";
+import {
+  listAddresses,
+  type UserAddress,
+} from "@/modules/account/address.actions";
+import { getCartItems, type CartLine } from "@/modules/cart/actions";
 import { placeOrder } from "@/modules/orders/actions";
-import type { Product } from "@/modules/products";
 import { useCartStore } from "@/store/use-cart-store";
 
 const PAYMENT_METHODS = [
@@ -37,22 +40,23 @@ export function CheckoutForm() {
   const [payment, setPayment] = useState("cod");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
+  const [lines, setLines] = useState<CartLine[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
-
-  const ids = useMemo(() => items.map((i) => i.productId), [items]);
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const ids = useMemo(() => items.map((i) => i.variantId), [items]);
 
   useEffect(() => {
     if (ids.length === 0) {
-      setProducts([]);
+      setLines([]);
       setProductsLoading(false);
       return;
     }
     let active = true;
     setProductsLoading(true);
-    getCartProducts(ids).then((result) => {
+    getCartItems(ids).then((result) => {
       if (!active) return;
-      setProducts(result);
+      setLines(result);
       setProductsLoading(false);
     });
     return () => {
@@ -60,23 +64,38 @@ export function CheckoutForm() {
     };
   }, [ids]);
 
-  const cartProducts = useMemo(() => {
-    const byId = new Map(products.map((p) => [p.id, p]));
+  useEffect(() => {
+    if (!session?.user) return;
+    let active = true;
+    listAddresses().then((result) => {
+      if (!active) return;
+      setAddresses(result);
+      const def = result.find((a) => a.isDefault) ?? result[0];
+      if (def) setSelectedAddressId(def.id);
+    });
+    return () => {
+      active = false;
+    };
+  }, [session?.user]);
+
+  const cartLines = useMemo(() => {
+    const byVariant = new Map(lines.map((l) => [l.variantId, l]));
     return items
       .map((item) => {
-        const product = byId.get(item.productId);
-        return product ? { product, quantity: item.quantity } : null;
+        const line = byVariant.get(item.variantId);
+        return line ? { line, quantity: item.quantity } : null;
       })
       .filter((x): x is NonNullable<typeof x> => x != null);
-  }, [products, items]);
+  }, [lines, items]);
 
-  const subtotal = cartProducts.reduce(
-    (sum, { product, quantity }) => sum + product.price * quantity,
+  const subtotal = cartLines.reduce(
+    (sum, { line, quantity }) =>
+      sum + (line.salePrice ?? line.price) * quantity,
     0,
   );
   const shippingFee = subtotal >= SHIPPING_THRESHOLD ? 0 : 30000;
   const total = subtotal + shippingFee;
-  const totalItems = cartProducts.reduce((s, { quantity }) => s + quantity, 0);
+  const totalItems = cartLines.reduce((s, { quantity }) => s + quantity, 0);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -89,22 +108,32 @@ export function CheckoutForm() {
     setError("");
     setIsLoading(true);
 
+    const useSaved = selectedAddressId !== "";
+    const paymentMethod =
+      payment === "card" ? "CARD" : payment === "bank" ? "BANK" : "COD";
+
     const result = await placeOrder({
       items: items.map((i) => ({
-        productId: i.productId,
+        variantId: i.variantId,
         quantity: i.quantity,
       })),
+      addressId: useSaved ? selectedAddressId : undefined,
       fullName,
       phone,
       street,
       district,
       city,
       note,
+      paymentMethod,
     });
 
     if (result.ok) {
       clearCart();
-      router.push(`/checkout/success?order=${result.orderId}`);
+      if (paymentMethod === "CARD") {
+        router.push(`/checkout/payment/${result.orderId}`);
+      } else {
+        router.push(`/checkout/success?order=${result.orderId}`);
+      }
     } else {
       setError(result.error);
       setIsLoading(false);
@@ -119,7 +148,7 @@ export function CheckoutForm() {
     );
   }
 
-  if (cartProducts.length === 0) {
+  if (cartLines.length === 0) {
     return (
       <div className="py-20 text-center">
         <p className="text-neutral-500">
@@ -146,60 +175,116 @@ export function CheckoutForm() {
               </h2>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  id="checkout-name"
-                  label="Họ và tên"
-                  placeholder="Nguyễn Văn A"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-                <Input
-                  id="checkout-phone"
-                  label="Số điện thoại"
-                  type="tel"
-                  placeholder="0901 234 567"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-              </div>
-              <Input
-                id="checkout-email"
-                label="Email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Input
-                id="checkout-street"
-                label="Địa chỉ"
-                placeholder="Số nhà, tên đường"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                required
-              />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  id="checkout-district"
-                  label="Quận / Huyện"
-                  placeholder="Quận Bình Tân"
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  required
-                />
-                <Input
-                  id="checkout-city"
-                  label="Tỉnh / Thành phố"
-                  placeholder="TP. Hồ Chí Minh"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                />
-              </div>
+              {addresses.length > 0 && (
+                <div className="space-y-2">
+                  {addresses.map((a) => (
+                    <label
+                      key={a.id}
+                      className={cn(
+                        "flex cursor-pointer gap-3 rounded-xl border p-3",
+                        selectedAddressId === a.id
+                          ? "border-brand-500 bg-brand-50"
+                          : "border-neutral-200",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="addr"
+                        checked={selectedAddressId === a.id}
+                        onChange={() => setSelectedAddressId(a.id)}
+                        className="mt-1"
+                      />
+                      <div className="text-sm">
+                        <p className="font-medium text-neutral-900">
+                          {a.fullName} · {a.phone}
+                          {a.isDefault && " (Mặc định)"}
+                        </p>
+                        <p className="text-neutral-500">
+                          {[a.street, a.ward, a.district, a.city]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                  <label
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3",
+                      selectedAddressId === ""
+                        ? "border-brand-500 bg-brand-50"
+                        : "border-neutral-200",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="addr"
+                      checked={selectedAddressId === ""}
+                      onChange={() => setSelectedAddressId("")}
+                    />
+                    <span className="text-sm font-medium text-neutral-900">
+                      Nhập địa chỉ mới
+                    </span>
+                  </label>
+                </div>
+              )}
+              {selectedAddressId === "" && (
+                <>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Input
+                      id="checkout-name"
+                      label="Họ và tên"
+                      placeholder="Nguyễn Văn A"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                    <Input
+                      id="checkout-phone"
+                      label="Số điện thoại"
+                      type="tel"
+                      placeholder="0901 234 567"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Input
+                    id="checkout-email"
+                    label="Email"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <Input
+                    id="checkout-street"
+                    label="Địa chỉ"
+                    placeholder="Số nhà, tên đường"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                    required
+                  />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Input
+                      id="checkout-district"
+                      label="Quận / Huyện"
+                      placeholder="Quận Bình Tân"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      required
+                    />
+                    <Input
+                      id="checkout-city"
+                      label="Tỉnh / Thành phố"
+                      placeholder="TP. Hồ Chí Minh"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
               <div className="space-y-1.5">
                 <label
                   htmlFor="checkout-note"
@@ -277,23 +362,25 @@ export function CheckoutForm() {
 
             {/* Items */}
             <div className="mt-4 max-h-64 space-y-3 overflow-y-auto">
-              {cartProducts.map(({ product, quantity }) => (
-                <div key={product.id} className="flex items-center gap-3">
+              {cartLines.map(({ line, quantity }) => (
+                <div key={line.variantId} className="flex items-center gap-3">
                   <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100">
                     <img
-                      src={product.image}
-                      alt={product.name}
+                      src={line.image}
+                      alt={line.productName}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-neutral-900">
-                      {product.name}
+                      {line.productName}
                     </p>
-                    <p className="text-xs text-neutral-400">SL: {quantity}</p>
+                    <p className="text-xs text-neutral-400">
+                      {line.variantName} · SL: {quantity}
+                    </p>
                   </div>
                   <span className="text-sm font-semibold text-neutral-700">
-                    {formatPrice(product.price * quantity)}
+                    {formatPrice((line.salePrice ?? line.price) * quantity)}
                   </span>
                 </div>
               ))}

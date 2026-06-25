@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { changePassword } from "@/modules/account/actions";
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -60,11 +61,16 @@ export function ChangePasswordForm() {
 
     setIsLoading(true);
 
-    // Simulate API call with 600ms delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    const result = await changePassword({ currentPassword, newPassword });
 
     setIsLoading(false);
-    setSuccess("Mật khẩu đã được cập nhật");
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+
+    setSuccess("Đổi mật khẩu thành công");
 
     // Clear form
     setCurrentPassword("");
@@ -78,13 +84,13 @@ export function ChangePasswordForm() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-6">
+    <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
       {/* Header */}
       <div className="mb-6">
         <h2 className="font-serif text-xl font-bold text-neutral-900">
           Đổi mật khẩu
         </h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <p className="mt-1 text-sm text-neutral-500">
           Đảm bảo tài khoản của bạn luôn được bảo mật
         </p>
       </div>
@@ -93,14 +99,14 @@ export function ChangePasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         {/* Success Message */}
         {success && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3">
             <p className="text-sm text-green-600">{success}</p>
           </div>
         )}
@@ -141,8 +147,8 @@ export function ChangePasswordForm() {
             type="submit"
             disabled={isLoading}
             className={cn(
-              "w-full bg-brand-500 hover:bg-brand-600 text-white rounded-xl transition-colors",
-              isLoading && "opacity-50 cursor-not-allowed"
+              "bg-brand-500 hover:bg-brand-600 w-full rounded-xl text-white transition-colors",
+              isLoading && "cursor-not-allowed opacity-50",
             )}
           >
             {isLoading ? "Đang cập nhật..." : "Cập nhật mật khẩu"}

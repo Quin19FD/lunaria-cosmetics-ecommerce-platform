@@ -2,15 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export interface CartItem {
-  productId: string;
+  variantId: string;
   quantity: number;
 }
 
 interface CartStore {
   items: CartItem[];
-  addItem: (productId: string, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (variantId: string, quantity?: number) => void;
+  removeItem: (variantId: string) => void;
+  updateQuantity: (variantId: string, quantity: number) => void;
+  setItems: (items: CartItem[]) => void;
   clearCart: () => void;
   totalItems: () => number;
 }
@@ -19,39 +20,40 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (productId, quantity = 1) => {
+      addItem: (variantId, quantity = 1) => {
         set((state) => {
-          const existing = state.items.find((i) => i.productId === productId);
+          const existing = state.items.find((i) => i.variantId === variantId);
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.productId === productId
+                i.variantId === variantId
                   ? { ...i, quantity: i.quantity + quantity }
                   : i,
               ),
             };
           }
-          return { items: [...state.items, { productId, quantity }] };
+          return { items: [...state.items, { variantId, quantity }] };
         });
       },
-      removeItem: (productId) =>
+      removeItem: (variantId) =>
         set((state) => ({
-          items: state.items.filter((i) => i.productId !== productId),
+          items: state.items.filter((i) => i.variantId !== variantId),
         })),
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (variantId, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(productId);
+          get().removeItem(variantId);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.productId === productId ? { ...i, quantity } : i,
+            i.variantId === variantId ? { ...i, quantity } : i,
           ),
         }));
       },
+      setItems: (items) => set({ items }),
       clearCart: () => set({ items: [] }),
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
-    { name: "lunaria-cart" },
+    { name: "lunaria-cart-v2" },
   ),
 );

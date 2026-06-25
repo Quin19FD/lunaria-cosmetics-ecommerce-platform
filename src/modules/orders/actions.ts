@@ -1,6 +1,6 @@
 "use server";
 
-import type { OrderStatus } from "@prisma/client";
+import type { OrderStatus, PaymentMethod } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
@@ -10,7 +10,7 @@ const FREE_SHIPPING_THRESHOLD = 500000;
 const SHIPPING_FEE = 30000;
 
 export interface PlaceOrderInput {
-  items: { productId: string; quantity: number }[];
+  items: { variantId: string; quantity: number }[];
   fullName: string;
   phone: string;
   street: string;
@@ -18,6 +18,8 @@ export interface PlaceOrderInput {
   district: string;
   city: string;
   note?: string;
+  addressId?: string;
+  paymentMethod?: PaymentMethod;
 }
 
 export type PlaceOrderResult =
@@ -38,7 +40,15 @@ export async function placeOrder(
     return { ok: false, error: "Giỏ hàng trống." };
   }
 
-  if (
+  // Address: use a saved address if provided (and owned), else require a new one.
+  const addressId = input.addressId;
+  if (addressId) {
+    const owned = await prisma.address.findFirst({
+      where: { id: addressId, userId },
+      select: { id: true },
+    });
+    if (!owned) return { ok: false, error: "Địa chỉ không hợp lệ." };
+  } else if (
     !input.fullName.trim() ||
     !input.phone.trim() ||
     !input.street.trim() ||
@@ -48,57 +58,92 @@ export async function placeOrder(
     return { ok: false, error: "Vui lòng nhập đầy đủ thông tin giao hàng." };
   }
 
-  // Resolve each product to its cheapest active variant (matches the price
-  // shown on the storefront, which uses the minimum variant price).
-  const items: { variantId: string; quantity: number; unitPrice: number }[] =
-    [];
-  let subtotal = 0;
-  for (const line of lines) {
-    const variant = await prisma.productVariant.findFirst({
-      where: { productId: line.productId, product: { isActive: true } },
-      orderBy: { price: "asc" },
-      select: { id: true, price: true },
-    });
-    if (!variant) {
-      return { ok: false, error: "Một sản phẩm trong giỏ không còn khả dụng." };
-    }
-    subtotal += variant.price * line.quantity;
-    items.push({
-      variantId: variant.id,
-      quantity: line.quantity,
-      unitPrice: variant.price,
-    });
-  }
+  try {
+    const orderId = await prisma.$transaction(async (tx) => {
+      const items: {
+        variantId: string;
+        quantity: number;
+        unitPrice: number;
+      }[] = [];
+      let subtotal = 0;
 
-  const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  const total = subtotal + shippingCost;
+      for (const line of lines) {
+        const variant = await tx.productVariant.findFirst({
+          where: { id: line.variantId, product: { isActive: true } },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            salePrice: true,
+            stock: true,
+          },
+        });
+        if (!variant) {
+          throw new Error("Một sản phẩm trong giỏ không còn khả dụng.");
+        }
+        if (variant.stock < line.quantity) {
+          throw new Error(
+            `Sản phẩm "${variant.name}" chỉ còn ${variant.stock} trong kho.`,
+          );
+        }
+        const unitPrice = variant.salePrice ?? variant.price;
+        subtotal += unitPrice * line.quantity;
+        items.push({
+          variantId: variant.id,
+          quantity: line.quantity,
+          unitPrice,
+        });
 
-  const order = await prisma.order.create({
-    data: {
-      user: { connect: { id: userId } },
-      status: "PENDING",
-      note: input.note?.trim() || null,
-      subtotal,
-      shippingCost,
-      total,
-      address: {
-        create: {
+        await tx.productVariant.update({
+          where: { id: variant.id },
+          data: { stock: { decrement: line.quantity } },
+        });
+      }
+
+      const shippingCost =
+        subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+      const total = subtotal + shippingCost;
+
+      const order = await tx.order.create({
+        data: {
           user: { connect: { id: userId } },
-          fullName: input.fullName.trim(),
-          phone: input.phone.trim(),
-          street: input.street.trim(),
-          ward: input.ward?.trim() || null,
-          district: input.district.trim(),
-          city: input.city.trim(),
+          status: "PENDING",
+          paymentMethod: input.paymentMethod ?? "COD",
+          paymentStatus: "UNPAID",
+          note: input.note?.trim() || null,
+          subtotal,
+          shippingCost,
+          total,
+          address: addressId
+            ? { connect: { id: addressId } }
+            : {
+                create: {
+                  user: { connect: { id: userId } },
+                  fullName: input.fullName.trim(),
+                  phone: input.phone.trim(),
+                  street: input.street.trim(),
+                  ward: input.ward?.trim() || null,
+                  district: input.district.trim(),
+                  city: input.city.trim(),
+                },
+              },
+          items: { create: items },
         },
-      },
-      items: { create: items },
-    },
-    select: { id: true },
-  });
+        select: { id: true },
+      });
 
-  revalidatePath("/admin/orders");
-  return { ok: true, orderId: order.id };
+      // Clear the user's persisted cart on successful checkout.
+      await tx.cart.deleteMany({ where: { userId } });
+
+      return order.id;
+    });
+
+    revalidatePath("/admin/orders");
+    return { ok: true, orderId };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Không thể tạo đơn hàng.";
+    return { ok: false, error: message };
+  }
 }
 
 export interface MyOrderRow {
