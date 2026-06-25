@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AddToCartButton } from "@/components/shared/add-to-cart-button";
+import { WishlistButton } from "@/components/shared/wishlist-button";
 import { cn, formatPrice } from "@/lib/utils";
 import type { Product } from "@/modules/products";
 
@@ -40,6 +41,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
           fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+
+        {/* Wishlist heart — stops propagation so it doesn't navigate */}
+        <WishlistButton
+          productId={product.id}
+          className="absolute top-2 right-2 z-10 h-9 w-9 rounded-full bg-white/90 shadow-sm backdrop-blur-sm hover:bg-white"
         />
 
         {/* Badge */}

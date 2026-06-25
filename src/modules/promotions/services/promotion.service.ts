@@ -1,16 +1,19 @@
+import { prisma } from "@/lib/db";
 import { productService } from "@/modules/products";
 import type { Product } from "@/modules/products";
 
-import { FLASH_DEALS_MOCK, PROMOTIONS_MOCK } from "../data/promotions.mock";
+import { FLASH_DEALS_MOCK } from "../data/promotions.mock";
 import type { FlashDeal, Promotion } from "../types";
 
 export const promotionService = {
-  getAll(): Promotion[] {
-    return PROMOTIONS_MOCK;
+  async getAll(): Promise<Promotion[]> {
+    return prisma.promotion.findMany({
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    });
   },
 
-  getById(id: string): Promotion | undefined {
-    return PROMOTIONS_MOCK.find((p) => p.id === id);
+  async getById(id: string): Promise<Promotion | null> {
+    return prisma.promotion.findUnique({ where: { id } });
   },
 
   async getFlashDeals(): Promise<(FlashDeal & { product: Product })[]> {

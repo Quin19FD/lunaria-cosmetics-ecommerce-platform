@@ -8,6 +8,9 @@ import {
   Tag,
   Users,
   Star,
+  Ticket,
+  Megaphone,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,7 +35,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Bán hàng",
-    items: [{ label: "Đơn hàng", href: "/admin/orders", icon: ShoppingCart }],
+    items: [
+      { label: "Đơn hàng", href: "/admin/orders", icon: ShoppingCart },
+      { label: "Mã giảm giá", href: "/admin/coupons", icon: Ticket },
+    ],
   },
   {
     title: "Sản phẩm",
@@ -40,6 +46,13 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Sản phẩm", href: "/admin/products", icon: Package },
       { label: "Danh mục", href: "/admin/categories", icon: FolderTree },
       { label: "Thương hiệu", href: "/admin/brands", icon: Tag },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { label: "Khuyến mãi", href: "/admin/promotions", icon: Megaphone },
+      { label: "Bộ sưu tập", href: "/admin/collections", icon: Sparkles },
     ],
   },
   {

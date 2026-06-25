@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { requestPasswordReset } from "@/modules/auth";
 
 import { AuthCard } from "./auth-card";
 import { AuthHeader } from "./auth-header";
@@ -13,14 +14,25 @@ export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const result = await requestPasswordReset({ email });
+      if (result.ok) {
+        setIsSent(true);
+      } else {
+        setError(result.error);
+      }
+    } catch {
+      setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
       setIsLoading(false);
-      setIsSent(true);
-    }, 1500);
+    }
   }
 
   if (isSent) {
@@ -33,9 +45,9 @@ export function ForgotPasswordForm() {
         />
 
         <div className="space-y-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
+          <div className="bg-brand-50 mx-auto flex h-16 w-16 items-center justify-center rounded-full">
             <svg
-              className="h-8 w-8 text-brand-500"
+              className="text-brand-500 h-8 w-8"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
@@ -55,7 +67,7 @@ export function ForgotPasswordForm() {
             <button
               type="button"
               onClick={() => setIsSent(false)}
-              className="font-semibold text-brand-500 hover:text-brand-600"
+              className="text-brand-500 hover:text-brand-600 font-semibold"
             >
               Try again
             </button>
@@ -66,7 +78,7 @@ export function ForgotPasswordForm() {
           Remember your password?{" "}
           <Link
             href="/auth/login"
-            className="font-semibold text-brand-500 hover:text-brand-600"
+            className="text-brand-500 hover:text-brand-600 font-semibold"
           >
             Sign in
           </Link>
@@ -84,6 +96,12 @@ export function ForgotPasswordForm() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
         <Input
           id="forgot-email"
           label="Email Address"
@@ -109,7 +127,7 @@ export function ForgotPasswordForm() {
         Remember your password?{" "}
         <Link
           href="/auth/login"
-          className="font-semibold text-brand-500 hover:text-brand-600"
+          className="text-brand-500 hover:text-brand-600 font-semibold"
         >
           Back to Sign in
         </Link>

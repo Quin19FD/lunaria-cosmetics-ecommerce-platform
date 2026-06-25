@@ -1,18 +1,20 @@
+import { prisma } from "@/lib/db";
 import { productService } from "@/modules/products";
 import type { Product } from "@/modules/products";
 
-import { COLLECTIONS_MOCK } from "../data/collections.mock";
 import type { Collection } from "../types";
 
 const PAGE_SIZE = 8;
 
 export const collectionService = {
-  getAll(): Collection[] {
-    return COLLECTIONS_MOCK;
+  async getAll(): Promise<Collection[]> {
+    return prisma.collection.findMany({
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    });
   },
 
-  getBySlug(slug: string): Collection | undefined {
-    return COLLECTIONS_MOCK.find((c) => c.slug === slug);
+  async getBySlug(slug: string): Promise<Collection | null> {
+    return prisma.collection.findUnique({ where: { slug } });
   },
 
   async getProducts(

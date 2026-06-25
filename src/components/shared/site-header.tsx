@@ -3,8 +3,9 @@
 import { LogOut, Menu, Search, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useMounted } from "@/hooks/use-mounted";
@@ -23,12 +24,22 @@ export function SiteHeader() {
   const { data: session } = useSession();
   const user = session?.user;
   const cartCount = useCartStore((s) => s.totalItems());
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   function handleLogout() {
     setShowUserMenu(false);
     void signOut({ callbackUrl: "/auth/login" });
+  }
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+    setIsMobileMenuOpen(false);
+    router.push(`/search?q=${encodeURIComponent(query)}`);
   }
 
   // Derive initials from user name
@@ -75,14 +86,22 @@ export function SiteHeader() {
         {/* Right Actions */}
         <div className="flex items-center gap-2 md:gap-3">
           {/* Search bar — desktop */}
-          <div className="hidden items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 md:flex">
+          <form
+            onSubmit={handleSearch}
+            className="hidden items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 md:flex"
+          >
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm..."
+              aria-label="Tìm kiếm"
               className="w-32 bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500"
             />
-            <Search className="h-4 w-4 text-neutral-500" />
-          </div>
+            <button type="submit" aria-label="Tìm kiếm">
+              <Search className="h-4 w-4 text-neutral-500" />
+            </button>
+          </form>
 
           {/* Search icon — mobile */}
           <Button
@@ -90,6 +109,7 @@ export function SiteHeader() {
             size="icon"
             className="md:hidden"
             aria-label="Tìm kiếm"
+            onClick={() => router.push("/search")}
           >
             <Search className="h-5 w-5" />
           </Button>
@@ -207,6 +227,23 @@ export function SiteHeader() {
       {isMobileMenuOpen && (
         <nav className="border-b border-neutral-200 bg-white px-4 py-4 lg:hidden">
           <div className="flex flex-col gap-1">
+            {/* Search — mobile menu */}
+            <form
+              onSubmit={handleSearch}
+              className="mb-2 flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2"
+            >
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm..."
+                aria-label="Tìm kiếm"
+                className="w-full bg-transparent text-sm text-neutral-900 outline-none placeholder:text-neutral-500"
+              />
+              <button type="submit" aria-label="Tìm kiếm">
+                <Search className="h-4 w-4 text-neutral-500" />
+              </button>
+            </form>
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}

@@ -11,9 +11,27 @@ export async function updateOrderStatus(id: string, formData: FormData) {
   const trackingCode =
     String(formData.get("trackingCode") ?? "").trim() || null;
 
-  await prisma.order.update({
+  const order = await prisma.order.findUnique({
     where: { id },
-    data: { status, trackingCode },
+    select: { status: true, items: { select: { variantId: true, quantity: true } } },
+  });
+  if (!order) throw new Error("Không tìm thấy đơn hàng.");
+
+  // Return stock to inventory when an order is first cancelled/refunded.
+  const RELEASED: OrderStatus[] = ["CANCELLED", "REFUNDED"];
+  const releasing =
+    RELEASED.includes(status) && !RELEASED.includes(order.status);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({ where: { id }, data: { status, trackingCode } });
+    if (releasing) {
+      for (const item of order.items) {
+        await tx.productVariant.update({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    }
   });
 
   revalidatePath(`/admin/orders/${id}`);

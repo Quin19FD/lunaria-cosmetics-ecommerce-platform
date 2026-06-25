@@ -13,6 +13,7 @@ import {
   type UserAddress,
 } from "@/modules/account/address.actions";
 import { getCartItems, type CartLine } from "@/modules/cart/actions";
+import { validateCoupon } from "@/modules/coupons/actions";
 import { placeOrder } from "@/modules/orders/actions";
 import { useCartStore } from "@/store/use-cart-store";
 
@@ -41,6 +42,13 @@ export function CheckoutForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discount: number;
+    description: string;
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
   const [productsLoading, setProductsLoading] = useState(true);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
@@ -94,8 +102,28 @@ export function CheckoutForm() {
     0,
   );
   const shippingFee = subtotal >= SHIPPING_THRESHOLD ? 0 : 30000;
-  const total = subtotal + shippingFee;
+  const discount = appliedCoupon
+    ? Math.min(appliedCoupon.discount, subtotal)
+    : 0;
+  const total = subtotal + shippingFee - discount;
   const totalItems = cartLines.reduce((s, { quantity }) => s + quantity, 0);
+
+  async function handleApplyCoupon() {
+    setCouponError("");
+    const code = couponInput.trim();
+    if (!code) return;
+    const result = await validateCoupon(code, subtotal);
+    if (result.ok) {
+      setAppliedCoupon({
+        code: result.code,
+        discount: result.discount,
+        description: result.description,
+      });
+    } else {
+      setAppliedCoupon(null);
+      setCouponError(result.error);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -125,6 +153,7 @@ export function CheckoutForm() {
       city,
       note,
       paymentMethod,
+      couponCode: appliedCoupon?.code,
     });
 
     if (result.ok) {
@@ -386,6 +415,33 @@ export function CheckoutForm() {
               ))}
             </div>
 
+            {/* Coupon */}
+            <div className="mt-4 border-t border-neutral-100 pt-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Mã giảm giá"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleApplyCoupon}
+                >
+                  Áp dụng
+                </Button>
+              </div>
+              {couponError && (
+                <p className="mt-1.5 text-xs text-red-500">{couponError}</p>
+              )}
+              {appliedCoupon && (
+                <p className="mt-1.5 text-xs text-green-600">
+                  Đã áp dụng {appliedCoupon.code} — {appliedCoupon.description}
+                </p>
+              )}
+            </div>
+
             {/* Totals */}
             <div className="mt-5 space-y-2 border-t border-neutral-100 pt-4">
               <div className="flex justify-between text-sm">
@@ -404,6 +460,16 @@ export function CheckoutForm() {
                   )}
                 </span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-500">
+                    Giảm giá{appliedCoupon ? ` (${appliedCoupon.code})` : ""}
+                  </span>
+                  <span className="text-green-600">
+                    -{formatPrice(discount)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-neutral-100 pt-3">
                 <span className="font-semibold">Tổng cộng</span>
                 <span className="text-brand-500 text-lg font-bold">

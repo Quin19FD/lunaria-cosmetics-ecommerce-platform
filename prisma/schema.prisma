@@ -268,6 +268,7 @@ model Order {
   paymentIntent String?     @unique
   paymentMethod PaymentMethod @default(COD)
   paymentStatus PaymentStatus @default(UNPAID)
+  couponCode    String?
 
   user      User        @relation(fields: [userId], references: [id])
   items     OrderItem[]
@@ -351,4 +352,79 @@ model WishlistItem {
 
   @@unique([userId, productId])
   @@map("wishlist_items")
+}
+
+// ─── Coupons ─────────────────────────────────────────────────────────────────
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+model Coupon {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  type        DiscountType
+  value       Int
+  minOrder    Int          @default(0)
+  maxDiscount Int?
+  active      Boolean      @default(true)
+  expiresAt   DateTime?
+  usageLimit  Int?
+  usedCount   Int          @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@map("coupons")
+}
+
+// ─── Marketing ───────────────────────────────────────────────────────────────
+
+enum PromoColor {
+  pink
+  purple
+  amber
+  emerald
+}
+
+model Promotion {
+  id           String     @id @default(cuid())
+  title        String
+  subtitle     String
+  code         String     @unique
+  discount     String
+  description  String     @db.Text
+  endDate      String
+  image        String
+  color        PromoColor @default(pink)
+  productSlugs String[]
+  active       Boolean    @default(true)
+  position     Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("promotions")
+}
+
+model Collection {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  badge         String
+  label         String
+  headline      String
+  highlightWord String
+  summary       String   @db.Text
+  description   String[]
+  ctaLabel      String
+  heroImage     String
+  cardImage     String
+  productSlugs  String[]
+  position      Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("collections")
 }

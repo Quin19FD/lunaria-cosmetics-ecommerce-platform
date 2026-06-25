@@ -1,6 +1,9 @@
 import { PrismaClient, OrderStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+import { COLLECTIONS_MOCK } from "../src/modules/collections/data/collections.mock";
+import { PROMOTIONS_MOCK } from "../src/modules/promotions/data/promotions.mock";
+
 const prisma = new PrismaClient();
 
 async function seedUsers() {
@@ -389,6 +392,77 @@ async function resetTransactional() {
   await prisma.product.deleteMany();
 }
 
+async function seedCoupons() {
+  const coupons = [
+    {
+      code: "SALE10",
+      type: "PERCENT" as const,
+      value: 10,
+      minOrder: 0,
+      maxDiscount: 100000,
+    },
+    {
+      code: "GIAM50K",
+      type: "FIXED" as const,
+      value: 50000,
+      minOrder: 300000,
+      maxDiscount: null,
+    },
+  ];
+  for (const c of coupons) {
+    await prisma.coupon.upsert({
+      where: { code: c.code },
+      update: {},
+      create: c,
+    });
+  }
+}
+
+async function seedPromotions() {
+  for (const [i, p] of PROMOTIONS_MOCK.entries()) {
+    await prisma.promotion.upsert({
+      where: { code: p.code },
+      update: {},
+      create: {
+        title: p.title,
+        subtitle: p.subtitle,
+        code: p.code,
+        discount: p.discount,
+        description: p.description,
+        endDate: p.endDate,
+        image: p.image,
+        color: p.color,
+        productSlugs: p.productSlugs,
+        position: i,
+      },
+    });
+  }
+}
+
+async function seedCollections() {
+  for (const [i, c] of COLLECTIONS_MOCK.entries()) {
+    await prisma.collection.upsert({
+      where: { slug: c.slug },
+      update: {},
+      create: {
+        name: c.name,
+        slug: c.slug,
+        badge: c.badge,
+        label: c.label,
+        headline: c.headline,
+        highlightWord: c.highlightWord,
+        summary: c.summary,
+        description: c.description,
+        ctaLabel: c.ctaLabel,
+        heroImage: c.heroImage,
+        cardImage: c.cardImage,
+        productSlugs: c.productSlugs,
+        position: i,
+      },
+    });
+  }
+}
+
 async function main() {
   console.log("🌱 Seeding database...");
   await seedUsers();
@@ -396,6 +470,9 @@ async function main() {
   await seedCatalog();
   await seedReviews();
   await seedOrders();
+  await seedCoupons();
+  await seedPromotions();
+  await seedCollections();
   console.log("   • admin: admin@lunaria.beauty / admin123");
   console.log("   • customer: demo@lunaria.beauty / 123456");
   console.log("✅ Seed complete.");

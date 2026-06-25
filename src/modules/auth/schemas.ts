@@ -11,5 +11,15 @@ export const registerSchema = z.object({
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+});
+
+export const resetPasswordSchema = z.object({
+  password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

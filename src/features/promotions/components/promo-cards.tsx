@@ -6,10 +6,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-import { promotionService } from "@/modules/promotions";
+import type { Promotion } from "@/modules/promotions";
 
-export function PromoCards() {
-  const promotions = promotionService.getAll();
+interface PromoCardsProps {
+  promotions: Promotion[];
+}
+
+export function PromoCards({ promotions }: PromoCardsProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   function copyCode(code: string, promoId: string) {
@@ -88,7 +91,7 @@ export function PromoCards() {
 
                   <Link
                     href="/products"
-                    className="ml-auto flex items-center gap-1 text-sm font-medium text-white/80 transition-all hover:text-white hover:translate-x-0.5"
+                    className="ml-auto flex items-center gap-1 text-sm font-medium text-white/80 transition-all hover:translate-x-0.5 hover:text-white"
                   >
                     Mua ngay
                     <ArrowRight className="h-4 w-4" />

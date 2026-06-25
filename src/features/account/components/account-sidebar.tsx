@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, LogOut, MapPin, ShoppingBag, User } from "lucide-react";
+import { Heart, Lock, LogOut, MapPin, ShoppingBag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,6 +14,7 @@ import { accountService } from "@/modules/account";
 const NAV_ITEMS = [
   { label: "Thông tin cá nhân", href: "/account/profile", icon: User },
   { label: "Đơn hàng của tôi", href: "/account/orders", icon: ShoppingBag },
+  { label: "Yêu thích", href: "/account/wishlist", icon: Heart },
   { label: "Địa chỉ", href: "/account/addresses", icon: MapPin },
   { label: "Đổi mật khẩu", href: "/account/change-password", icon: Lock },
 ];

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
+import { WishlistButton } from "@/components/shared/wishlist-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
@@ -194,6 +195,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
         >
           Mua ngay
         </Button>
+        <WishlistButton
+          productId={product.id}
+          className="h-12 w-12 flex-shrink-0 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50"
+        />
       </div>
 
       {/* Trust Badges */}

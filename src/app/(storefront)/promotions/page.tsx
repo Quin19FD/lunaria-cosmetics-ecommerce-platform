@@ -15,12 +15,13 @@ export const metadata: Metadata = {
 
 export default async function PromotionsPage() {
   const deals = await promotionService.getFlashDeals();
+  const promotions = await promotionService.getAll();
 
   return (
     <>
       <PromoHero />
       <FlashDeals deals={deals} />
-      <PromoCards />
+      <PromoCards promotions={promotions} />
       <PromoNewsletter />
     </>
   );

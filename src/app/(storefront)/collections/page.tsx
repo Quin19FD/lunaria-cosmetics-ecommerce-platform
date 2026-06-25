@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: "Khám phá những bộ sưu tập mỹ phẩm cao cấp từ Lunaria Beauty",
 };
 
-export default function CollectionsPage() {
-  const collections = collectionService.getAll();
+export default async function CollectionsPage() {
+  const collections = await collectionService.getAll();
 
   return (
     <>

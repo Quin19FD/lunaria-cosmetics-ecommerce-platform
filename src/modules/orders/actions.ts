@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { computeDiscount } from "@/modules/coupons/discount";
+
+import { sendOrderConfirmationEmail } from "./emails";
 
 const FREE_SHIPPING_THRESHOLD = 500000;
 const SHIPPING_FEE = 30000;
@@ -20,6 +23,7 @@ export interface PlaceOrderInput {
   note?: string;
   addressId?: string;
   paymentMethod?: PaymentMethod;
+  couponCode?: string;
 }
 
 export type PlaceOrderResult =
@@ -102,7 +106,31 @@ export async function placeOrder(
 
       const shippingCost =
         subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-      const total = subtotal + shippingCost;
+
+      // Validate + consume coupon atomically.
+      let discount = 0;
+      let couponCode: string | null = null;
+      const rawCode = input.couponCode?.trim().toUpperCase();
+      if (rawCode) {
+        const coupon = await tx.coupon.findUnique({ where: { code: rawCode } });
+        const valid =
+          coupon &&
+          coupon.active &&
+          (!coupon.expiresAt || coupon.expiresAt >= new Date()) &&
+          (coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit) &&
+          subtotal >= coupon.minOrder;
+        if (!valid) {
+          throw new Error("Mã giảm giá không hợp lệ hoặc không đủ điều kiện.");
+        }
+        discount = computeDiscount(coupon, subtotal);
+        couponCode = coupon.code;
+        await tx.coupon.update({
+          where: { id: coupon.id },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+
+      const total = Math.max(0, subtotal + shippingCost - discount);
 
       const order = await tx.order.create({
         data: {
@@ -113,6 +141,8 @@ export async function placeOrder(
           note: input.note?.trim() || null,
           subtotal,
           shippingCost,
+          discount,
+          couponCode,
           total,
           address: addressId
             ? { connect: { id: addressId } }
@@ -139,6 +169,12 @@ export async function placeOrder(
     });
 
     revalidatePath("/admin/orders");
+    // Card orders receive their confirmation from the Stripe webhook post-payment.
+    if ((input.paymentMethod ?? "COD") !== "CARD") {
+      try {
+        await sendOrderConfirmationEmail(orderId);
+      } catch {}
+    }
     return { ok: true, orderId };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Không thể tạo đơn hàng.";
