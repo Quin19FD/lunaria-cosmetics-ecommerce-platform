@@ -8,7 +8,11 @@ const prisma = new PrismaClient();
 
 async function seedUsers() {
   const customerPw = await bcrypt.hash("123456", 10);
-  const adminPw = await bcrypt.hash("admin123", 10);
+  const staffPw = await bcrypt.hash("staff123", 10);
+  // Public demos set SEED_SUPER_ADMIN_PASSWORD so the README password only
+  // works on local and CI databases. Re-seeding with it set rotates it.
+  const superAdminEnvPw = process.env.SEED_SUPER_ADMIN_PASSWORD;
+  const adminPw = await bcrypt.hash(superAdminEnvPw || "admin123", 10);
 
   await prisma.user.upsert({
     where: { email: "demo@lunaria.beauty" },
@@ -22,12 +26,26 @@ async function seedUsers() {
   });
   await prisma.user.upsert({
     where: { email: "admin@lunaria.beauty" },
-    update: { role: "SUPER_ADMIN" },
+    update: {
+      role: "SUPER_ADMIN",
+      ...(superAdminEnvPw ? { password: adminPw } : {}),
+    },
     create: {
       name: "Admin Lunaria",
       email: "admin@lunaria.beauty",
       password: adminPw,
       role: "SUPER_ADMIN",
+    },
+  });
+  // Public demo admin: full back office, but cannot change roles.
+  await prisma.user.upsert({
+    where: { email: "staff@lunaria.beauty" },
+    update: { role: "ADMIN" },
+    create: {
+      name: "Staff Lunaria",
+      email: "staff@lunaria.beauty",
+      password: staffPw,
+      role: "ADMIN",
     },
   });
   for (const [name, email] of [
