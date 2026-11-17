@@ -11,6 +11,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 - `requireAdmin()` đọc lại role từ database thay vì tin role trong JWT, nên admin bị hạ quyền mất quyền ngay.
 - Đổi vai trò người dùng: chỉ `SUPER_ADMIN`, role được validate bằng Zod, không cho tự đổi role của chính mình; form đổi role bị ẩn với người không đủ quyền.
 - `sendOrderConfirmationEmail` không còn là Server Action công khai (bỏ `"use server"` ở `modules/orders/emails.ts`).
+- Nâng `next` 15.5.29, `next-auth` 5.0.0-beta.32, `@auth/core` 0.41.3, `@auth/prisma-adapter` 2.11.3, `nodemailer` 10.6 để vá các advisory critical/high (RCE ở Image Optimization, lỗi chuẩn hoá email của Auth.js…); ép `postcss`/`nanoid`/`source-map-js` lên bản vá qua `pnpm.overrides`.
 
 ### Added
 
