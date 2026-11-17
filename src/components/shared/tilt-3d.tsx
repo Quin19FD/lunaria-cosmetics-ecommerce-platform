@@ -147,7 +147,7 @@ export function Tilt3D({
 }
 
 export interface Tilt3DLayerProps {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   /** How far (px) the layer rises towards the viewer while active. */
   depth?: number;
