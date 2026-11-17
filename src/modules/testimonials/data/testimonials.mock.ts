@@ -6,7 +6,7 @@ export const TESTIMONIALS_MOCK: Testimonial[] = [
     name: "Minh Anh",
     title: "Nhân viên văn phòng",
     avatar:
-      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=80&h=80&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80",
     rating: 5,
     content:
       "Serum của Lunaria thực sự làm thay đổi làn da của mình. Da căng bóng và đều màu hơn chỉ sau 2 tuần sử dụng. Rất hài lòng!",

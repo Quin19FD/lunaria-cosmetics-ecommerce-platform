@@ -10,6 +10,8 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 const BASE_URL = `http://localhost:${PORT}`;
 export const E2E_WEBHOOK_SECRET = "whsec_e2e_test";
+// Test-only value for the cron route; the stale-orders spec sends the same one.
+export const E2E_CRON_SECRET = "e2e-cron-test-value";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -31,6 +33,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       STRIPE_WEBHOOK_SECRET: E2E_WEBHOOK_SECRET,
+      CRON_SECRET: E2E_CRON_SECRET,
       AUTH_URL: BASE_URL,
       NEXT_PUBLIC_APP_URL: BASE_URL,
     },
