@@ -18,6 +18,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Added
 
+- `pnpm test:visual` + workflow `Visual check`: mở storefront trên Chromium desktop, WebKit desktop và Chromium 360px (touch); kiểm hiệu ứng tilt 3D bật với chuột, tắt với touch và `prefers-reduced-motion`; kiểm tràn ngang, ảnh hỏng, lỗi console; lưu ảnh chụp thành artifact.
 - Job định kỳ `/api/cron/release-stale-orders` (Vercel Cron, mỗi ngày): huỷ đơn thẻ `PENDING`/`UNPAID` quá 1 giờ và trả tồn kho + lượt dùng coupon. Huỷ PaymentIntent trên Stripe trước; Stripe từ chối (đã trả tiền) thì bỏ qua đơn đó. Route yêu cầu `Authorization: Bearer $CRON_SECRET`.
 - SEO: `sitemap.xml` (sản phẩm, bộ sưu tập), `robots.txt`, ảnh Open Graph mặc định, metadata + canonical + Open Graph cho trang sản phẩm và bộ sưu tập, JSON-LD `Product` (giá theo biến thể, tồn kho, điểm đánh giá lấy từ review thật).
 - CI GitHub Actions: `pnpm check` (typecheck, lint, format, unit test) trên Linux/Windows/macOS; `pnpm build` + e2e Playwright trên Postgres service.
@@ -32,6 +33,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Fixed
 
+- Thay 3 ảnh Unsplash có chữ/logo in trên bao bì (ô danh mục "Dưỡng da", hai bộ sưu tập, ảnh phụ ở hero, ảnh trang đăng nhập) bằng ảnh đã soát ở cỡ 1400px.
 - Đặt hàng không còn bán vượt tồn kho khi nhiều người mua cùng lúc: kiểm kho và trừ kho gộp thành một `UPDATE … WHERE stock >= qty`; lượt dùng coupon cũng được giành bằng một update có điều kiện.
 - Huỷ/hoàn tiền đơn trả lại tồn kho **và** lượt dùng coupon, đúng một lần kể cả khi bấm lặp hoặc gọi đồng thời; đơn đã huỷ không mở lại được.
 - Webhook Stripe `payment_intent.canceled` huỷ đơn thẻ chưa thanh toán và trả kho (`payment_failed` được bỏ qua vì khách có thể thử thẻ khác).

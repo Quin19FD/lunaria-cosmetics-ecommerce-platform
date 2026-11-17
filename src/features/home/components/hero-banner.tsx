@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&h=800&fit=crop&q=80";
 const HERO_ACCENT_IMAGE =
-  "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400&h=530&fit=crop&q=80";
+  "https://images.unsplash.com/photo-1773372238338-f26460145162?w=400&h=530&fit=crop&q=80";
 
 /**
  * Right-hand depth scene. Far planes (glow, rings) drift against the pointer,

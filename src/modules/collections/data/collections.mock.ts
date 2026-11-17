@@ -46,7 +46,7 @@ export const COLLECTIONS_MOCK: Collection[] = [
     heroImage:
       "https://images.unsplash.com/photo-1608463026422-8f43ab4ebac0?w=1400&h=700&fit=crop&q=80",
     cardImage:
-      "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&h=700&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1760920250029-36af9369a0bb?w=600&h=700&fit=crop&q=80",
     productSlugs: [
       "mascara-lam-day-mi",
       "son-li-hong-dat",
@@ -73,7 +73,7 @@ export const COLLECTIONS_MOCK: Collection[] = [
     heroImage:
       "https://images.unsplash.com/photo-1712925371825-78e9f8592208?w=1400&h=700&fit=crop&q=80",
     cardImage:
-      "https://images.unsplash.com/photo-1583209814683-c023dd293cc6?w=600&h=700&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1748543668751-902d6461890d?w=600&h=700&fit=crop&q=80",
     productSlugs: [
       "phan-nen-kiem-dau",
       "son-li-hong-dat",
