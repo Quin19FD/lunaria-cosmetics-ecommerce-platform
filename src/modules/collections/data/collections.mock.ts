@@ -17,7 +17,7 @@ export const COLLECTIONS_MOCK: Collection[] = [
     ],
     ctaLabel: "Khám phá Nghi thức",
     heroImage:
-      "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=1400&h=700&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1504358031587-0c7faf5b8364?w=1400&h=700&fit=crop&q=80",
     cardImage:
       "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=700&fit=crop&q=80",
     productSlugs: [
@@ -44,7 +44,7 @@ export const COLLECTIONS_MOCK: Collection[] = [
     ],
     ctaLabel: "Xem bộ sưu tập",
     heroImage:
-      "https://images.unsplash.com/photo-1495638488670-437f770ef8c5?w=1400&h=700&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1608463026422-8f43ab4ebac0?w=1400&h=700&fit=crop&q=80",
     cardImage:
       "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&h=700&fit=crop&q=80",
     productSlugs: [
@@ -71,7 +71,7 @@ export const COLLECTIONS_MOCK: Collection[] = [
     ],
     ctaLabel: "Xem bộ sưu tập",
     heroImage:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400&h=700&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1712925371825-78e9f8592208?w=1400&h=700&fit=crop&q=80",
     cardImage:
       "https://images.unsplash.com/photo-1583209814683-c023dd293cc6?w=600&h=700&fit=crop&q=80",
     productSlugs: [

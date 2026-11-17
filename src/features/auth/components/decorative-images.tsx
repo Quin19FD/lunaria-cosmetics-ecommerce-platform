@@ -15,7 +15,7 @@ export function DecorativeImages() {
       >
         <div className="relative h-[420px] w-[260px] overflow-hidden rounded-3xl shadow-2xl shadow-black/10 xl:h-[480px] xl:w-[300px]">
           <Image
-            src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&h=900&fit=crop&q=80"
+            src="https://images.unsplash.com/photo-1622618991746-fe6004db3a47?w=600&h=900&fit=crop&q=80"
             alt="Luxury perfume bottle with rose petals"
             fill
             className="object-cover"

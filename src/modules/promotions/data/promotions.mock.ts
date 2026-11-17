@@ -29,7 +29,7 @@ export const PROMOTIONS_MOCK: Promotion[] = [
       "Đừng bỏ lỡ cơ hội sở hữu serum và kem dưỡng cao cấp với giá không tưởng. Flash sale từ 0h - 6h sáng.",
     endDate: "2025-06-15",
     image:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800&h=500&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1515688594390-b649af70d282?w=800&h=500&fit=crop&q=80",
     color: "purple",
     productSlugs: [
       "serum-vitamin-c",
@@ -47,7 +47,7 @@ export const PROMOTIONS_MOCK: Promotion[] = [
       "Mua 2 sản phẩm bất kỳ trong danh mục mặt nạ và toner, nhận ngay 1 sản phẩm miễn phí có giá trị thấp nhất.",
     endDate: "2025-07-31",
     image:
-      "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=800&h=500&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1748543668676-ea8241cb3886?w=800&h=500&fit=crop&q=80",
     color: "emerald",
     productSlugs: [
       "nuoc-tay-trang-diu-nhe",
@@ -66,7 +66,7 @@ export const PROMOTIONS_MOCK: Promotion[] = [
       "Combo dưỡng da hoàn hảo gồm sữa rửa mặt, toner và serum với giá ưu đãi đặc biệt.",
     endDate: "2025-08-15",
     image:
-      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=800&h=500&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1748543668751-902d6461890d?w=800&h=500&fit=crop&q=80",
     color: "amber",
     productSlugs: [
       "nuoc-tay-trang-diu-nhe",
