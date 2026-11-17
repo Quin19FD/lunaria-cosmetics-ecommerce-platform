@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { Tilt3D, Tilt3DLayer, Tilt3DSheen } from "@/components/shared/tilt-3d";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Collection } from "@/modules/collections";
@@ -17,20 +18,48 @@ export function CollectionCard({ collection, index }: CollectionCardProps) {
     <div
       className={cn(
         "grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12",
-        isReversed && "lg:direction-rtl",
       )}
     >
-      {/* Image */}
+      {/* Image — a stack of tinted plates; on hover the stack fans out in depth */}
       <div className={cn("order-1", isReversed ? "lg:order-2" : "lg:order-1")}>
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl">
-          <Image
-            src={collection.cardImage}
-            alt={collection.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
+        <Tilt3D
+          maxTilt={5}
+          perspective={1400}
+          activeScale={1}
+          className="relative mx-auto w-full max-w-xl"
+        >
+          <Tilt3DLayer
+            depth={-50}
+            className={cn(
+              "bg-brand-200/70 absolute inset-0 rounded-2xl",
+              isReversed
+                ? "-translate-x-3 translate-y-3 sm:-translate-x-4 sm:translate-y-4"
+                : "translate-x-3 translate-y-3 sm:translate-x-4 sm:translate-y-4",
+            )}
           />
-        </div>
+          <Tilt3DLayer
+            depth={-24}
+            className={cn(
+              "bg-brand-100 absolute inset-0 rounded-2xl",
+              isReversed
+                ? "-translate-x-1.5 translate-y-1.5 sm:-translate-x-2 sm:translate-y-2"
+                : "translate-x-1.5 translate-y-1.5 sm:translate-x-2 sm:translate-y-2",
+            )}
+          />
+          <Tilt3DLayer
+            depth={24}
+            className="shadow-brand-900/10 relative aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-xl"
+          >
+            <Image
+              src={collection.cardImage}
+              alt={collection.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <Tilt3DSheen intensity={0.25} />
+          </Tilt3DLayer>
+        </Tilt3D>
       </div>
 
       {/* Content */}

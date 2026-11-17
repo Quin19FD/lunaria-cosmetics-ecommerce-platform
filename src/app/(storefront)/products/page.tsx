@@ -29,6 +29,8 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [result, setResult] = useState<ProductListResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   // Load filter categories once.
   useEffect(() => {
@@ -45,20 +47,36 @@ export default function ProductsPage() {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setFailed(false);
     getFilteredProducts({
       category: category ?? undefined,
       skinType: skinType ?? undefined,
       sort,
       page,
-    }).then((res) => {
-      if (!active) return;
-      setResult(res);
-      setLoading(false);
-    });
+    })
+      .then((res) => {
+        if (active) setResult(res);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
-  }, [category, skinType, sort, page]);
+  }, [category, skinType, sort, page, attempt]);
+
+  // Close the mobile filter drawer with Escape.
+  useEffect(() => {
+    if (!showMobileFilters) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowMobileFilters(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showMobileFilters]);
 
   const handleCategoryChange = useCallback((cat: string | null) => {
     setCategory(cat);
@@ -99,12 +117,18 @@ export default function ProductsPage() {
 
         {/* Mobile sidebar overlay */}
         {showMobileFilters && (
-          <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div
+            className="fixed inset-0 z-50 flex lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Bộ lọc"
+          >
             <div
-              className="absolute inset-0 bg-black/30"
+              aria-hidden
+              className="absolute inset-0 bg-neutral-900/40 backdrop-blur-[2px]"
               onClick={() => setShowMobileFilters(false)}
             />
-            <div className="relative ml-auto flex h-full w-80 flex-col bg-white shadow-xl">
+            <div className="relative ml-auto flex h-full w-[min(20rem,88vw)] flex-col bg-white shadow-xl">
               <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <SlidersHorizontal className="h-4 w-4" />
@@ -113,6 +137,8 @@ export default function ProductsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Đóng bộ lọc"
+                  autoFocus
                   onClick={() => setShowMobileFilters(false)}
                 >
                   <X className="h-4 w-4" />
@@ -132,12 +158,32 @@ export default function ProductsPage() {
         )}
 
         {/* Product grid */}
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {loading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+            <div
+              className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4"
+              role="status"
+              aria-label="Đang tải sản phẩm"
+            >
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-[3/4] w-full rounded-xl" />
+                <ProductCardSkeleton key={i} />
               ))}
+            </div>
+          ) : failed ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 py-20 text-center">
+              <p className="text-lg font-medium text-neutral-700">
+                Không tải được sản phẩm
+              </p>
+              <p className="mt-1 text-sm text-neutral-500">
+                Kiểm tra kết nối mạng rồi thử lại.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => setAttempt((n) => n + 1)}
+              >
+                Thử lại
+              </Button>
             </div>
           ) : result && result.data.length > 0 ? (
             <>
@@ -156,11 +202,11 @@ export default function ProductsPage() {
               )}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 py-20 text-center">
               <p className="text-lg font-medium text-neutral-700">
                 Không tìm thấy sản phẩm
               </p>
-              <p className="mt-1 text-sm text-neutral-400">
+              <p className="mt-1 text-sm text-neutral-500">
                 Thử thay đổi bộ lọc để xem thêm sản phẩm
               </p>
               <Button
@@ -177,6 +223,22 @@ export default function ProductsPage() {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Same proportions as ProductCard, so the grid does not jump on load. */
+function ProductCardSkeleton() {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-neutral-900/5">
+      <Skeleton className="aspect-[4/5] w-full rounded-none" />
+      <div className="space-y-2 p-3 sm:p-4">
+        <Skeleton className="h-3 w-1/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="mt-3 h-10 w-full rounded-xl" />
       </div>
     </div>
   );
