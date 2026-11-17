@@ -10,14 +10,13 @@ import {
 import {
   createContext,
   useContext,
-  useRef,
   type FocusEvent,
   type PointerEvent,
   type ReactNode,
 } from "react";
 
 import { useMotionPreference } from "@/hooks/use-motion-preference";
-import { computeTilt, RESTING_TILT, type PointerBox } from "@/lib/tilt";
+import { computeTilt, RESTING_TILT } from "@/lib/tilt";
 import { cn } from "@/lib/utils";
 
 const SPRING = { stiffness: 220, damping: 22, mass: 0.6 };
@@ -67,7 +66,6 @@ export function Tilt3D({
   activeScale = 1.02,
 }: Tilt3DProps) {
   const { allowPointer } = useMotionPreference();
-  const boxRef = useRef<PointerBox | null>(null);
 
   const rotateXTarget = useMotionValue(0);
   const rotateYTarget = useMotionValue(0);
@@ -96,7 +94,6 @@ export function Tilt3D({
   }
 
   function reset() {
-    boxRef.current = null;
     rotateXTarget.set(0);
     rotateYTarget.set(0);
     activeTarget.set(0);
@@ -106,9 +103,10 @@ export function Tilt3D({
 
   function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
     if (e.pointerType !== "mouse" && e.pointerType !== "pen") return;
-    // Measure once per hover, not per frame.
-    boxRef.current ??= e.currentTarget.getBoundingClientRect();
-    const t = computeTilt(e.clientX, e.clientY, boxRef.current, maxTilt);
+    // Measured per move (a read only — we animate transforms, which never
+    // dirty layout) so the tilt stays correct if the page scrolls mid-hover.
+    const box = e.currentTarget.getBoundingClientRect();
+    const t = computeTilt(e.clientX, e.clientY, box, maxTilt);
     rotateXTarget.set(t.rotateX);
     rotateYTarget.set(t.rotateY);
     glareX.set(t.glareX);

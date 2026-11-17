@@ -37,6 +37,9 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Changed
 
+- Giao diện storefront có hiệu ứng 3D (chỉ CSS 3D transform + Framer Motion, không thêm thư viện): thẻ sản phẩm nghiêng theo con trỏ, ảnh nổi lên theo `translateZ` và có vệt sáng; hero trang chủ là cảnh parallax nhiều lớp theo con trỏ và cuộn trang; ảnh trang chi tiết sản phẩm xoay 3D khi đổi ảnh; thẻ bộ sưu tập là chồng "tấm" màu brand tách lớp khi hover. Tắt hết khi người dùng bật `prefers-reduced-motion`; không nghiêng trên thiết bị cảm ứng. Component dùng lại: `Tilt3D`, `Tilt3DLayer`, `Tilt3DSheen`, `ParallaxScene`, `ParallaxLayer` trong `src/components/shared`.
+- Hoàn thiện giao diện: trạng thái loading (skeleton đúng khung) và lỗi có nút "Thử lại" cho trang sản phẩm và giỏ hàng; bộ lọc mobile là dialog đóng bằng Escape; giỏ hàng không tràn ngang ở 360px; vòng focus rõ ràng cho thẻ, nút và thumbnail (thumbnail điều khiển bằng phím mũi tên); badge, giá và nút CTA phụ ở hero đủ tương phản AA; hero chỉ còn một `h1`.
+
 - Quy tắc phí ship, tổng tiền và điều kiện coupon gom về `modules/orders/pricing.ts` và `modules/coupons/eligibility.ts`, dùng chung cho server và giao diện giỏ/checkout.
 
 - README viết lại: ảnh, tính năng, tech stack, kiến trúc, cách chạy bằng Docker + seed, tài khoản demo, cách chạy test, badge CI.
