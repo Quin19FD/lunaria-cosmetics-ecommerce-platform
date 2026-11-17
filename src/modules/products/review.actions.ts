@@ -19,7 +19,7 @@ export async function getProductReviews(
 ): Promise<ProductReview[]> {
   const reviews = await prisma.review.findMany({
     where: { productId, isVisible: true },
-    include: { user: { select: { name: true, email: true } } },
+    include: { user: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
   });
   return reviews.map((r) => ({
@@ -27,7 +27,8 @@ export async function getProductReviews(
     rating: r.rating,
     title: r.title,
     comment: r.comment,
-    authorName: r.user.name ?? r.user.email,
+    // Reviews are public: never fall back to the email address.
+    authorName: r.user.name?.trim() || "Khách hàng",
     createdAt: r.createdAt,
   }));
 }

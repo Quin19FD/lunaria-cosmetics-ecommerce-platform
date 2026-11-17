@@ -1,9 +1,20 @@
 import bcrypt from "bcryptjs";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { prisma } from "@/lib/db";
+import {
+  RATE_LIMITS,
+  isRateLimited,
+  recordRateLimitHit,
+  requestIp,
+} from "@/lib/rate-limit";
 import { loginSchema } from "@/modules/auth/schemas";
+
+/** Surfaced to the client as `result.code === "rate_limited"`. */
+class RateLimitedSignin extends CredentialsSignin {
+  code = "rate_limited";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -19,13 +30,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-        });
-        if (!user?.password) return null;
+        const normalizedEmail = email.toLowerCase();
 
-        const valid = await bcrypt.compare(password, user.password);
-        if (!valid) return null;
+        // Only failed attempts count, so legitimate repeat logins are fine.
+        const ip = await requestIp();
+        const checks = [
+          [RATE_LIMITS.loginFailures, `${ip}:${normalizedEmail}`],
+          [RATE_LIMITS.loginFailuresIp, ip],
+        ] as const;
+        if (await isRateLimited(checks)) throw new RateLimitedSignin();
+
+        const user = await prisma.user.findUnique({
+          where: { email: normalizedEmail },
+        });
+        const valid =
+          !!user?.password && (await bcrypt.compare(password, user.password));
+        if (!user || !valid) {
+          await recordRateLimitHit(checks);
+          return null;
+        }
 
         return {
           id: user.id,

@@ -1,42 +1,47 @@
 "use server";
 
-import type { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
+import {
+  OutOfStockError,
+  isReleasedStatus,
+  releaseOrder,
+  reserveStock,
+} from "@/modules/orders/inventory";
+import { orderTotal } from "@/modules/orders/pricing";
+
+const statusSchema = z.nativeEnum(OrderStatus);
 
 export async function updateOrderStatus(id: string, formData: FormData) {
   await requireAdmin();
-  const status = formData.get("status") as OrderStatus;
+  const parsed = statusSchema.safeParse(formData.get("status"));
+  if (!parsed.success) throw new Error("Trạng thái không hợp lệ.");
+  const status = parsed.data;
   const trackingCode =
     String(formData.get("trackingCode") ?? "").trim() || null;
 
-  const order = await prisma.order.findUnique({
-    where: { id },
-    select: {
-      status: true,
-      items: { select: { variantId: true, quantity: true } },
-    },
-  });
-  if (!order) throw new Error("Không tìm thấy đơn hàng.");
-
-  // Return stock to inventory when an order is first cancelled/refunded.
-  const RELEASED: OrderStatus[] = ["CANCELLED", "REFUNDED"];
-  const releasing =
-    RELEASED.includes(status) && !RELEASED.includes(order.status);
-
   await prisma.$transaction(async (tx) => {
-    await tx.order.update({ where: { id }, data: { status, trackingCode } });
-    if (releasing) {
-      for (const item of order.items) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
+    const order = await tx.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    if (!order) throw new Error("Không tìm thấy đơn hàng.");
+
+    // Stock and the coupon use were returned on cancel/refund; reopening the
+    // order would need them re-reserved, so it is not allowed.
+    if (isReleasedStatus(order.status) && !isReleasedStatus(status)) {
+      throw new Error("Đơn đã huỷ hoặc hoàn tiền không thể mở lại.");
     }
+    // First move into CANCELLED/REFUNDED returns stock + coupon use, once.
+    if (isReleasedStatus(status)) {
+      await releaseOrder(tx, id, status);
+    }
+    await tx.order.update({ where: { id }, data: { status, trackingCode } });
   });
 
   revalidatePath(`/admin/orders/${id}`);
@@ -48,7 +53,11 @@ export async function createOrder(formData: FormData) {
   const userId = String(formData.get("userId") ?? "").trim();
   if (!userId) throw new Error("Vui lòng chọn khách hàng.");
 
-  const status = (formData.get("status") as OrderStatus) ?? "PENDING";
+  const parsedStatus = statusSchema.safeParse(
+    formData.get("status") ?? "PENDING",
+  );
+  if (!parsedStatus.success) throw new Error("Trạng thái không hợp lệ.");
+  const status = parsedStatus.data;
   const note = String(formData.get("note") ?? "").trim() || null;
   const shippingCost = Math.max(
     0,
@@ -92,7 +101,7 @@ export async function createOrder(formData: FormData) {
       unitPrice,
     };
   });
-  const total = Math.max(0, subtotal + shippingCost - discount);
+  const total = orderTotal({ subtotal, shippingCost, discount });
 
   const address = {
     fullName: String(formData.get("fullName") ?? "").trim(),
@@ -112,18 +121,32 @@ export async function createOrder(formData: FormData) {
     throw new Error("Vui lòng nhập đầy đủ địa chỉ giao hàng.");
   }
 
-  await prisma.order.create({
-    data: {
-      user: { connect: { id: userId } },
-      status,
-      note,
-      subtotal,
-      shippingCost,
-      discount,
-      total,
-      address: { create: { ...address, user: { connect: { id: userId } } } },
-      items: { create: items },
-    },
+  await prisma.$transaction(async (tx) => {
+    // An order that holds stock must take it, or cancelling it later would
+    // add units that were never removed.
+    if (!isReleasedStatus(status)) {
+      for (const line of lines) {
+        try {
+          await reserveStock(tx, line.variantId, line.quantity);
+        } catch (e) {
+          if (!(e instanceof OutOfStockError)) throw e;
+          throw new Error("Một sản phẩm không đủ tồn kho cho đơn này.");
+        }
+      }
+    }
+    await tx.order.create({
+      data: {
+        user: { connect: { id: userId } },
+        status,
+        note,
+        subtotal,
+        shippingCost,
+        discount,
+        total,
+        address: { create: { ...address, user: { connect: { id: userId } } } },
+        items: { create: items },
+      },
+    });
   });
 
   revalidatePath("/admin/orders");

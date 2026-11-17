@@ -25,11 +25,11 @@ model User {
   role          UserRole  @default(CUSTOMER)
   phone         String?
 
-  accounts Account[]
-  sessions Session[]
-  orders   Order[]
-  reviews  Review[]
-  wishlist WishlistItem[]
+  accounts  Account[]
+  sessions  Session[]
+  orders    Order[]
+  reviews   Review[]
+  wishlist  WishlistItem[]
   addresses Address[]
   cart      Cart?
 
@@ -120,14 +120,14 @@ model Brand {
 }
 
 model Product {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  slug        String  @unique
-  description String? @db.Text
-  ingredients String? @db.Text
-  howToUse    String? @db.Text
-  isActive    Boolean @default(true)
-  isFeatured  Boolean @default(false)
+  slug        String   @unique
+  description String?  @db.Text
+  ingredients String?  @db.Text
+  howToUse    String?  @db.Text
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
   badge       String?
   skinTypes   String[]
 
@@ -137,11 +137,11 @@ model Product {
   category Category @relation(fields: [categoryId], references: [id])
   brand    Brand    @relation(fields: [brandId], references: [id])
 
-  variants  ProductVariant[]
-  images    ProductImage[]
-  reviews   Review[]
-  tags      ProductTag[]
-  wishlist  WishlistItem[]
+  variants ProductVariant[]
+  images   ProductImage[]
+  reviews  Review[]
+  tags     ProductTag[]
+  wishlist WishlistItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,13 +158,13 @@ model ProductVariant {
   productId String
   sku       String @unique
   name      String // e.g. "30ml", "Rose Pink"
-  price     Int    // stored in cents
+  price     Int // stored in cents
   salePrice Int?
   stock     Int    @default(0)
-  weight    Int?   // grams
+  weight    Int? // grams
 
-  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems CartItem[]
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
   orderItems OrderItem[]
 
   @@index([productId])
@@ -256,16 +256,16 @@ enum PaymentStatus {
 }
 
 model Order {
-  id            String      @id @default(cuid())
+  id            String        @id @default(cuid())
   userId        String
-  status        OrderStatus @default(PENDING)
+  status        OrderStatus   @default(PENDING)
   subtotal      Int
-  shippingCost  Int         @default(0)
-  discount      Int         @default(0)
+  shippingCost  Int           @default(0)
+  discount      Int           @default(0)
   total         Int
-  note          String?     @db.Text
+  note          String?       @db.Text
   trackingCode  String?
-  paymentIntent String?     @unique
+  paymentIntent String?       @unique
   paymentMethod PaymentMethod @default(COD)
   paymentStatus PaymentStatus @default(UNPAID)
   couponCode    String?
@@ -298,15 +298,15 @@ model OrderItem {
 }
 
 model Address {
-  id         String  @id @default(cuid())
-  userId     String
-  fullName   String
-  phone      String
-  street     String
-  ward       String?
-  district   String
-  city       String
-  isDefault  Boolean @default(false)
+  id        String  @id @default(cuid())
+  userId    String
+  fullName  String
+  phone     String
+  street    String
+  ward      String?
+  district  String
+  city      String
+  isDefault Boolean @default(false)
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
@@ -323,7 +323,7 @@ model Review {
   id        String  @id @default(cuid())
   productId String
   userId    String
-  rating    Int     // 1-5
+  rating    Int // 1-5
   title     String?
   comment   String? @db.Text
   isVisible Boolean @default(true)
@@ -427,4 +427,17 @@ model Collection {
   updatedAt DateTime @updatedAt
 
   @@map("collections")
+}
+
+// ─── Rate limiting ──────────────────────────────────────────────────────────
+
+/// Fixed-window counters for abuse-prone endpoints (login, register, …).
+/// Stored in Postgres so limits hold across serverless instances.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime @db.Timestamptz(3)
+
+  @@index([resetAt])
+  @@map("rate_limits")
 }

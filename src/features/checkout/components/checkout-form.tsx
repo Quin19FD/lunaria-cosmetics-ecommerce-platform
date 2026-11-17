@@ -15,6 +15,7 @@ import {
 import { getCartItems, type CartLine } from "@/modules/cart/actions";
 import { validateCoupon } from "@/modules/coupons/actions";
 import { placeOrder } from "@/modules/orders/actions";
+import { shippingFeeFor } from "@/modules/orders/pricing";
 import { useCartStore } from "@/store/use-cart-store";
 
 const PAYMENT_METHODS = [
@@ -22,8 +23,6 @@ const PAYMENT_METHODS = [
   { id: "bank", label: "Chuyển khoản ngân hàng", icon: Landmark },
   { id: "card", label: "Thẻ tín dụng / ghi nợ", icon: CreditCard },
 ];
-
-const SHIPPING_THRESHOLD = 500000;
 
 export function CheckoutForm() {
   const router = useRouter();
@@ -101,7 +100,7 @@ export function CheckoutForm() {
       sum + (line.salePrice ?? line.price) * quantity,
     0,
   );
-  const shippingFee = subtotal >= SHIPPING_THRESHOLD ? 0 : 30000;
+  const shippingFee = shippingFeeFor(subtotal);
   const discount = appliedCoupon
     ? Math.min(appliedCoupon.discount, subtotal)
     : 0;

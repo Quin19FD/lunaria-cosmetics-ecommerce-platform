@@ -15,9 +15,17 @@ export async function generateMetadata({
   const collection = await collectionService.getBySlug(slug);
   if (!collection) return { title: "Bộ sưu tập không tìm thấy" };
 
+  const path = `/collections/${collection.slug}`;
   return {
     title: `${collection.name} — Bộ sưu tập`,
     description: collection.description[0],
+    alternates: { canonical: path },
+    openGraph: {
+      title: collection.name,
+      description: collection.description[0],
+      url: path,
+      images: [{ url: collection.heroImage, alt: collection.name }],
+    },
   };
 }
 

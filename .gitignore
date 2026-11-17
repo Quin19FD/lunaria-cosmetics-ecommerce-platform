@@ -1,13 +1,31 @@
 # >>> 8sync (managed) >>>
-# Derived / machine-local — rebuilt by `8sync harness init` + codegraph. Safe to ignore:
+# Derived / machine-local — rebuilt by `8sync harness init` + trail. Safe to ignore:
+graft/
+graphify-out/
 .codegraph/
 .cache/8sync/
 .gs/
+# Large-scope feature-planning evidence screenshots (regenerable binaries):
+su-code/planning/**/evidence-*.png
+# Research downloads (third-party copies) and experiment state (deep-research-web, autoresearch):
+outputs/.notes/
+outputs/autoresearch/
 # Secrets — NEVER commit:
 .env
 .env.*
 !.env.example
-# KEEP COMMITTED (do NOT add here): agents/ (memory), agents/skills/, AGENTS.md, CHANGELOG.md
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.session
+*.session-journal
+*.pkl
+# KEEP COMMITTED (do NOT add here): su-code/ (memory), AGENTS.md, CHANGELOG.md, .cursor/rules/
+# Claude Code per-machine settings:
+.claude/settings.local.json
+
 # <<< 8sync <<<
 
 # dependencies
@@ -52,3 +70,15 @@ postgres-data/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# AI tool config / agent memory — local only, not part of the product
+agents/
+su-code/
+.claude/
+.cursor/
+.omp/
+CLAUDE.md.bak-8sync
+graft/
+
+# ad-hoc screenshots (curated images live in docs/images/)
+/screenshots/

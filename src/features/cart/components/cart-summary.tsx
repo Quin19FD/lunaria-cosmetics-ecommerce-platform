@@ -5,18 +5,20 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import {
+  FREE_SHIPPING_THRESHOLD,
+  shippingFeeFor,
+} from "@/modules/orders/pricing";
 
 interface CartSummaryProps {
   subtotal: number;
   itemCount: number;
 }
 
-const SHIPPING_THRESHOLD = 500000;
-
 export function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
-  const shippingFee = subtotal >= SHIPPING_THRESHOLD ? 0 : 30000;
+  const shippingFee = shippingFeeFor(subtotal);
   const total = subtotal + shippingFee;
-  const freeShippingRemaining = SHIPPING_THRESHOLD - subtotal;
+  const freeShippingRemaining = FREE_SHIPPING_THRESHOLD - subtotal;
 
   return (
     <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
