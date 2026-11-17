@@ -17,6 +17,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Added
 
+- Job định kỳ `/api/cron/release-stale-orders` (Vercel Cron, mỗi ngày): huỷ đơn thẻ `PENDING`/`UNPAID` quá 1 giờ và trả tồn kho + lượt dùng coupon. Huỷ PaymentIntent trên Stripe trước; Stripe từ chối (đã trả tiền) thì bỏ qua đơn đó. Route yêu cầu `Authorization: Bearer $CRON_SECRET`.
 - SEO: `sitemap.xml` (sản phẩm, bộ sưu tập), `robots.txt`, ảnh Open Graph mặc định, metadata + canonical + Open Graph cho trang sản phẩm và bộ sưu tập, JSON-LD `Product` (giá theo biến thể, tồn kho, điểm đánh giá lấy từ review thật).
 - CI GitHub Actions: `pnpm check` (typecheck, lint, format, unit test) trên Linux/Windows/macOS; `pnpm build` + e2e Playwright trên Postgres service.
 - Unit test với Vitest (`pnpm test`), cho rate limit, giảm giá, phí ship, điều kiện coupon và hoàn kho; e2e `e2e/rate-limit.spec.ts` kiểm khoá đăng nhập sau 5 lần sai; `e2e/inventory.spec.ts` kiểm huỷ đơn (admin và Stripe) trả kho đúng một lần.
@@ -37,6 +38,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Changed
 
+- Ảnh sản phẩm trong seed dùng ảnh Unsplash không có logo thương hiệu (thay ảnh placeholder chữ, vốn không hiển thị được ở bản production vì `placehold.co` không nằm trong `images.remotePatterns`). Ảnh danh mục, bộ sưu tập, khuyến mãi và trang đăng nhập có nhãn hiệu thật (Chanel, Curology, Bobbi Brown, Estée Lauder…) hoặc đã bị gỡ khỏi Unsplash được thay bằng ảnh không logo.
 - Quy tắc phí ship, tổng tiền và điều kiện coupon gom về `modules/orders/pricing.ts` và `modules/coupons/eligibility.ts`, dùng chung cho server và giao diện giỏ/checkout.
 
 - README viết lại: ảnh, tính năng, tech stack, kiến trúc, cách chạy bằng Docker + seed, tài khoản demo, cách chạy test, badge CI.

@@ -95,8 +95,55 @@ interface SeedProduct {
   }[];
 }
 
-function img(name: string): string {
-  return `https://placehold.co/600x600/fce7f0/ef3985?text=${encodeURIComponent(name)}`;
+/** Logo-free Unsplash photos per product slug (the first one is the cover). */
+const PRODUCT_PHOTOS: Record<string, string[]> = {
+  "serum-vitamin-c": [
+    "1781344116880-029945a42b75",
+    "1713768704571-6aeb0d0e5105",
+    "1710410815589-dd83514104d0",
+  ],
+  "kem-duong-am-hyaluronic": [
+    "1763503834047-ac85c4105c0b",
+    "1763503836825-97f5450d155a",
+    "1765964492963-b0aa8c172431",
+  ],
+  "nuoc-tay-trang-diu-nhe": [
+    "1724085339140-531fe39625f7",
+    "1679394270597-e90694d70350",
+  ],
+  "son-li-hong-dat": [
+    "1773372238316-5f080152bcf1",
+    "1773372238338-f26460145162",
+    "1631214499500-2e34edcaccfe",
+  ],
+  "phan-nen-kiem-dau": [
+    "1701271482230-5ecaec3cd3e1",
+    "1515688594390-b649af70d282",
+  ],
+  "mascara-lam-day-mi": ["1758738880203-8968fb4eda82"],
+  "dau-goi-thao-duoc": ["1771535626784-7de36a960c1a"],
+  "dau-xa-phuc-hoi": ["1655892810227-c0cffe1d9717"],
+  "nuoc-hoa-huong-nhai": [
+    "1760920250029-36af9369a0bb",
+    "1622618991746-fe6004db3a47",
+  ],
+  "kem-chong-nang-spf50": [
+    "1632127579802-ff69469091a4",
+    "1748543668676-ea8241cb3886",
+  ],
+};
+
+function productImages(
+  slug: string,
+  name: string,
+): { url: string; alt: string; position: number }[] {
+  const photos = PRODUCT_PHOTOS[slug];
+  if (!photos) throw new Error(`No photos listed for product "${slug}"`);
+  return photos.map((id, position) => ({
+    url: `https://images.unsplash.com/photo-${id}?w=800&h=800&fit=crop&q=80`,
+    alt: name,
+    position,
+  }));
 }
 
 const PRODUCTS: SeedProduct[] = [
@@ -298,13 +345,7 @@ async function seedCatalog() {
         categoryId: category.id,
         brandId: brand.id,
         variants: { create: p.variants },
-        images: {
-          create: [
-            { url: img(p.name), alt: p.name, position: 0 },
-            { url: img(`${p.name} 2`), alt: p.name, position: 1 },
-            { url: img(`${p.name} 3`), alt: p.name, position: 2 },
-          ],
-        },
+        images: { create: productImages(p.slug, p.name) },
       },
     });
   }
