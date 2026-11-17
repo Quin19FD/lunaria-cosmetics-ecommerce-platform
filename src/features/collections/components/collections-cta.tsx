@@ -35,11 +35,11 @@ export function CollectionsCta() {
           placeholder="Địa chỉ email của bạn"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 bg-transparent px-4 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+          className="min-w-0 flex-1 bg-transparent px-4 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
         />
         <button
           type="submit"
-          className="rounded-full bg-neutral-900 px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
+          className="shrink-0 rounded-full bg-neutral-900 px-4 py-2.5 text-xs font-semibold tracking-wider whitespace-nowrap text-white uppercase transition-colors hover:bg-neutral-800 sm:px-6"
         >
           Thông báo cho tôi
         </button>
