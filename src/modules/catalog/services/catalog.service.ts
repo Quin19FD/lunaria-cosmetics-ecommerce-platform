@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/db";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder";
 
 import type { Category } from "../types";
-
-const PLACEHOLDER = "https://placehold.co/400x400/fce7f0/ef3985?text=Lunaria";
 
 function toView(c: {
   id: string;
@@ -14,7 +13,7 @@ function toView(c: {
     id: c.id,
     name: c.name,
     slug: c.slug,
-    image: c.image ?? PLACEHOLDER,
+    image: c.image ?? PLACEHOLDER_IMAGE,
   };
 }
 

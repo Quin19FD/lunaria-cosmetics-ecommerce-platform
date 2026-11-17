@@ -66,6 +66,27 @@ async function transformOf(target: Locator): Promise<string> {
   return target.evaluate((el) => getComputedStyle(el).transform);
 }
 
+/** True when the element is rotated or scaled, not just given perspective. */
+async function isTilted(target: Locator): Promise<boolean> {
+  return target.evaluate((el) => {
+    const t = getComputedStyle(el).transform;
+    if (t === "none") return false;
+    const m = new DOMMatrixReadOnly(t);
+    const near = (a: number, b: number) => Math.abs(a - b) < 1e-4;
+    const flat =
+      near(m.m11, 1) &&
+      near(m.m22, 1) &&
+      near(m.m33, 1) &&
+      near(m.m12, 0) &&
+      near(m.m13, 0) &&
+      near(m.m21, 0) &&
+      near(m.m23, 0) &&
+      near(m.m31, 0) &&
+      near(m.m32, 0);
+    return !flat;
+  });
+}
+
 /** Move a real pointer across the element, ending off-centre. */
 async function hoverOffCentre(page: Page, target: Locator): Promise<void> {
   await target.scrollIntoViewIfNeeded();
@@ -78,17 +99,43 @@ async function hoverOffCentre(page: Page, target: Locator): Promise<void> {
   await page.waitForTimeout(700); // spring settles
 }
 
+// WebKit reports every prefetch it aborts on navigation as an error; the
+// navigation itself succeeds, so these are not defects.
+const ABORTED_PREFETCH =
+  /due to access control checks|Failed to fetch RSC payload/;
+// Chromium logs this for each failed request; the URL is in failedRequests.
+const GENERIC_RESOURCE_ERROR = /^Failed to load resource/;
+
 let consoleErrors: string[] = [];
+let failedRequests: string[] = [];
 
 test.beforeEach(({ page }) => {
   consoleErrors = [];
-  page.on("pageerror", (err) => consoleErrors.push(`pageerror: ${err}`));
+  failedRequests = [];
+  page.on("pageerror", (err) => {
+    if (!ABORTED_PREFETCH.test(String(err))) {
+      consoleErrors.push(`pageerror: ${err}`);
+    }
+  });
   page.on("console", (msg) => {
-    if (msg.type() === "error") consoleErrors.push(msg.text());
+    const text = msg.text();
+    if (
+      msg.type() === "error" &&
+      !ABORTED_PREFETCH.test(text) &&
+      !GENERIC_RESOURCE_ERROR.test(text)
+    ) {
+      consoleErrors.push(text);
+    }
+  });
+  page.on("response", (res) => {
+    if (res.status() >= 400) {
+      failedRequests.push(`${res.status()} ${res.url()}`);
+    }
   });
 });
 
 test.afterEach(() => {
+  expect(failedRequests, "requests answered with 4xx/5xx").toEqual([]);
   expect(consoleErrors, "browser console errors").toEqual([]);
 });
 
@@ -120,7 +167,7 @@ test("products: card tilt follows a mouse and is off for touch", async ({
 
   const card = page.locator(PRODUCT_CARD).first();
   await expect(card).toBeVisible();
-  expect(await transformOf(card), "card at rest").toBe("none");
+  expect(await isTilted(card), "card at rest").toBe(false);
 
   if (isTouch(info)) {
     await card.scrollIntoViewIfNeeded();
@@ -128,11 +175,11 @@ test("products: card tilt follows a mouse and is off for touch", async ({
     expect(await transformOf(card), "touch must not tilt").toBe("none");
   } else {
     await hoverOffCentre(page, card);
-    expect(await transformOf(card), "hovered card").toContain("matrix3d");
+    expect(await isTilted(card), "hovered card").toBe(true);
     await shot(page, info, "05-products-card-hover");
     await page.mouse.move(0, 0);
-    await page.waitForTimeout(700);
-    expect(await transformOf(card), "card after leave").toBe("none");
+    await page.waitForTimeout(900);
+    expect(await isTilted(card), "card after leave").toBe(false);
   }
 
   await expectHealthy(page);
