@@ -33,7 +33,11 @@ export function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Email hoặc mật khẩu không đúng");
+      setError(
+        result.code === "rate_limited"
+          ? "Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+          : "Email hoặc mật khẩu không đúng",
+      );
       setIsLoading(false);
     } else {
       router.push("/");

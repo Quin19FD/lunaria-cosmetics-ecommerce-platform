@@ -1,6 +1,12 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitMessage,
+  requestIp,
+} from "@/lib/rate-limit";
 
 import { computeDiscount } from "./discount";
 
@@ -22,6 +28,13 @@ export async function validateCoupon(
 ): Promise<ValidateCouponResult> {
   const code = rawCode.trim().toUpperCase();
   if (!code) return { ok: false, error: "Vui lòng nhập mã giảm giá." };
+
+  // Slows down coupon-code enumeration.
+  const limit = await consumeRateLimit([
+    [RATE_LIMITS.coupon, await requestIp()],
+  ]);
+  if (!limit.ok)
+    return { ok: false, error: rateLimitMessage(limit.retryAfterSec) };
 
   const coupon = await prisma.coupon.findUnique({ where: { code } });
   if (!coupon || !coupon.active) {

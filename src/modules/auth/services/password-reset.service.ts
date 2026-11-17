@@ -6,6 +6,12 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitMessage,
+  requestIp,
+} from "@/lib/rate-limit";
 
 import { forgotPasswordSchema, resetPasswordSchema } from "../schemas";
 
@@ -29,6 +35,16 @@ export async function requestPasswordReset(input: unknown): Promise<Result> {
   }
 
   const email = parsed.data.email.toLowerCase();
+
+  // Keyed on the submitted email (not on whether it exists), so the limit
+  // itself does not reveal registered addresses.
+  const limit = await consumeRateLimit([
+    [RATE_LIMITS.forgotPasswordEmail, email],
+    [RATE_LIMITS.forgotPasswordIp, await requestIp()],
+  ]);
+  if (!limit.ok) {
+    return { ok: false, error: rateLimitMessage(limit.retryAfterSec) };
+  }
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {

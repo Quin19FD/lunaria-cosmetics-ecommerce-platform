@@ -12,10 +12,12 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 - Đổi vai trò người dùng: chỉ `SUPER_ADMIN`, role được validate bằng Zod, không cho tự đổi role của chính mình; form đổi role bị ẩn với người không đủ quyền.
 - `sendOrderConfirmationEmail` không còn là Server Action công khai (bỏ `"use server"` ở `modules/orders/emails.ts`).
 - Nâng `next` 15.5.29, `next-auth` 5.0.0-beta.32, `@auth/core` 0.41.3, `@auth/prisma-adapter` 2.11.3, `nodemailer` 10.6 để vá các advisory critical/high (RCE ở Image Optimization, lỗi chuẩn hoá email của Auth.js…); ép `postcss`/`nanoid`/`source-map-js` lên bản vá qua `pnpm.overrides`.
+- Rate limit (fixed-window, lưu ở bảng Postgres `rate_limits`): đăng nhập sai 5 lần/15 phút theo IP+email và 20 lần/15 phút theo IP; đăng ký 5 lần/giờ/IP; quên mật khẩu 3 lần/15 phút/email và 10 lần/giờ/IP; kiểm tra mã giảm giá 30 lần/10 phút/IP.
 
 ### Added
 
-- CI GitHub Actions: `pnpm check` + `pnpm build` trên Linux/Windows/macOS, và e2e Playwright trên Postgres service.
+- CI GitHub Actions: `pnpm check` (typecheck, lint, format, unit test) trên Linux/Windows/macOS; `pnpm build` + e2e Playwright trên Postgres service.
+- Unit test với Vitest (`pnpm test`), bắt đầu từ logic rate limit; e2e `e2e/rate-limit.spec.ts` kiểm khoá đăng nhập sau 5 lần sai.
 - E2E `e2e/admin-authz.spec.ts`: CUSTOMER và ADMIN không đổi được role qua action; SUPER_ADMIN là đối chứng.
 - Thanh toán Stripe thật: tạo PaymentIntent, form thẻ dùng Stripe Elements, và webhook `/api/webhooks/stripe` xác minh chữ ký rồi xác nhận đơn (idempotent).
 - Email xác nhận đơn hàng qua SMTP (Nodemailer) — gửi khi đặt COD/chuyển khoản và khi thanh toán thẻ thành công.

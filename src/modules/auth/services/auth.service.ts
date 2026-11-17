@@ -3,6 +3,12 @@
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/db";
+import {
+  RATE_LIMITS,
+  consumeRateLimit,
+  rateLimitMessage,
+  requestIp,
+} from "@/lib/rate-limit";
 
 import { registerSchema } from "../schemas";
 import type { AuthResult } from "../types";
@@ -23,6 +29,13 @@ export async function registerUser(input: unknown): Promise<AuthResult> {
 
   const { name, email, password } = parsed.data;
   const normalizedEmail = email.toLowerCase();
+
+  const limit = await consumeRateLimit([
+    [RATE_LIMITS.register, await requestIp()],
+  ]);
+  if (!limit.ok) {
+    return { success: false, error: rateLimitMessage(limit.retryAfterSec) };
+  }
 
   const existing = await prisma.user.findUnique({
     where: { email: normalizedEmail },
