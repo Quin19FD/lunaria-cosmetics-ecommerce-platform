@@ -41,7 +41,11 @@ async function settle(page: Page): Promise<void> {
   // A lazy image the quick scroll passed may not have started (WebKit): bring
   // each one into view and give it time. Still unloaded => expectHealthy fails.
   await page.evaluate(async () => {
-    const pending = Array.from(document.images).filter((img) => !img.complete);
+    // No client rects = display:none (e.g. the hero scene below lg): the
+    // browser never loads those, and nobody sees them.
+    const pending = Array.from(document.images).filter(
+      (img) => !img.complete && img.getClientRects().length > 0,
+    );
     for (const img of pending) {
       img.scrollIntoView({ block: "center" });
       await Promise.race([
@@ -74,7 +78,11 @@ async function expectHealthy(page: Page): Promise<void> {
           `${Math.round(right)}px <${el.tagName.toLowerCase()} class="${String(el.className).slice(0, 90)}">`,
       ),
     broken: Array.from(document.images)
-      .filter((img) => !img.complete || img.naturalWidth === 0)
+      .filter(
+        (img) =>
+          img.getClientRects().length > 0 &&
+          (!img.complete || img.naturalWidth === 0),
+      )
       .map((img) => img.currentSrc || img.src),
   }));
   expect(
@@ -201,8 +209,13 @@ test("products: card tilt follows a mouse and is off for touch", async ({
     expect(await isTilted(card), "hovered card").toBe(true);
     await shot(page, info, "05-products-card-hover");
     await page.mouse.move(0, 0);
-    await page.waitForTimeout(900);
-    expect(await isTilted(card), "card after leave").toBe(false);
+    // The spring back to rest takes longer on a loaded WebKit runner.
+    await expect
+      .poll(() => isTilted(card), {
+        message: "card after leave",
+        timeout: 5000,
+      })
+      .toBe(false);
   }
 
   await expectHealthy(page);
