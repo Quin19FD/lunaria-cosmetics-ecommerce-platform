@@ -14,7 +14,7 @@ export default async function CollectionsPage() {
   return (
     <>
       {/* Page header */}
-      <section className="py-12 text-center lg:py-16">
+      <section className="px-4 py-12 text-center sm:px-6 lg:py-16">
         <h1 className="font-serif text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl">
           Tầm Nhìn Nghệ Thuật
         </h1>

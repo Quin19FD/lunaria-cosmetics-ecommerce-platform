@@ -34,7 +34,7 @@ export function AddToCartButton({
       onClick={handleClick}
       disabled={outOfStock}
       className={cn(
-        "bg-brand-500 shadow-brand-500/25 hover:bg-brand-600 focus-visible:ring-brand-500/40 mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 disabled:shadow-none",
+        "bg-brand-500 shadow-brand-500/25 hover:bg-brand-600 focus-visible:ring-brand-500/40 mt-auto inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium whitespace-nowrap text-white shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-500 disabled:shadow-none sm:px-5",
         className,
       )}
     >
