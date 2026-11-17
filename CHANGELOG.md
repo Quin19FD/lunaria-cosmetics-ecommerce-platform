@@ -7,6 +7,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Security
 
+- Đánh giá sản phẩm không còn hiển thị email của người viết khi họ chưa đặt tên (hiển thị "Khách hàng").
 - Mọi Server Action trong `/admin` giờ tự gọi `requireAdmin()` — trước đây chỉ layout chặn việc xem trang, nên khách hàng đã đăng nhập có thể gọi thẳng action (kể cả tự nâng mình lên `SUPER_ADMIN` qua `updateUserRole`).
 - `requireAdmin()` đọc lại role từ database thay vì tin role trong JWT, nên admin bị hạ quyền mất quyền ngay.
 - Đổi vai trò người dùng: chỉ `SUPER_ADMIN`, role được validate bằng Zod, không cho tự đổi role của chính mình; form đổi role bị ẩn với người không đủ quyền.
