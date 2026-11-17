@@ -33,6 +33,7 @@ A full-stack cosmetics store built with Next.js 15 (App Router), Prisma, Postgre
 - **Transactional order placement.** Stock is checked and decremented, and the coupon's usage is claimed atomically, inside one Prisma `$transaction`. Two buyers cannot oversell the last item or overuse a coupon.
 - **Stripe webhook** verifies the signature and is idempotent: an order only moves `UNPAID → PAID`, so replays do nothing.
 - **Server Actions are treated as public endpoints.** Every admin action calls `requireAdmin()`, which re-reads the role from the database, so a demoted admin loses access right away even with an old session token. An e2e test replays the admin role form from a customer session and asserts it is rejected.
+- **Abandoned card checkouts release their stock.** A daily cron route cancels card orders left unpaid for over an hour: it cancels the Stripe PaymentIntent first, then restocks inside a transaction, and skips any order Stripe reports as paid.
 - **Rate limiting** on login (failures only), registration, password reset and coupon checks, using a Postgres-backed fixed window that holds across serverless instances.
 - Input validated with Zod, strict TypeScript with no `any`, `next/image` for product imagery, security headers, and `loading` / `error` / `not-found` routes.
 
@@ -89,6 +90,7 @@ Environment variables (names only; see `.env.example`):
 
 - `DATABASE_URL`, `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`
 - Stripe (test mode): `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
+- Cron: `CRON_SECRET` (bearer token for `/api/cron/release-stale-orders`; the route answers 401 without it)
 - Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`
 
 ### Demo accounts (created by the seed)
