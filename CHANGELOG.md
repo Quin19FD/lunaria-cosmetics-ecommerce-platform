@@ -17,6 +17,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Added
 
+- SEO: `sitemap.xml` (sản phẩm, bộ sưu tập), `robots.txt`, ảnh Open Graph mặc định, metadata + canonical + Open Graph cho trang sản phẩm và bộ sưu tập, JSON-LD `Product` (giá theo biến thể, tồn kho, điểm đánh giá lấy từ review thật).
 - CI GitHub Actions: `pnpm check` (typecheck, lint, format, unit test) trên Linux/Windows/macOS; `pnpm build` + e2e Playwright trên Postgres service.
 - Unit test với Vitest (`pnpm test`), cho rate limit, giảm giá, phí ship, điều kiện coupon và hoàn kho; e2e `e2e/rate-limit.spec.ts` kiểm khoá đăng nhập sau 5 lần sai; `e2e/inventory.spec.ts` kiểm huỷ đơn (admin và Stripe) trả kho đúng một lần.
 - E2E `e2e/admin-authz.spec.ts`: CUSTOMER và ADMIN không đổi được role qua action; SUPER_ADMIN là đối chứng.
