@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 function parseForm(formData: FormData) {
@@ -25,6 +26,7 @@ function parseForm(formData: FormData) {
 }
 
 export async function createBrand(formData: FormData) {
+  await requireAdmin();
   const { name, slug, description, country } = parseForm(formData);
   if (!name || !slug) return;
 
@@ -37,6 +39,7 @@ export async function createBrand(formData: FormData) {
 }
 
 export async function updateBrand(id: string, formData: FormData) {
+  await requireAdmin();
   const { name, slug, description, country } = parseForm(formData);
   if (!name || !slug) return;
 
@@ -50,6 +53,7 @@ export async function updateBrand(id: string, formData: FormData) {
 }
 
 export async function deleteBrand(id: string) {
+  await requireAdmin();
   try {
     await prisma.brand.delete({ where: { id } });
   } catch {

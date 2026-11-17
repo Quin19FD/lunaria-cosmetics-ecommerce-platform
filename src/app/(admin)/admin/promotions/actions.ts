@@ -4,6 +4,7 @@ import type { PromoColor } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 const PROMO_COLORS: PromoColor[] = ["pink", "purple", "amber", "emerald"];
@@ -46,6 +47,7 @@ function parseForm(formData: FormData) {
 }
 
 export async function createPromotion(formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.title || !data.code) return;
 
@@ -62,6 +64,7 @@ export async function createPromotion(formData: FormData) {
 }
 
 export async function updatePromotion(id: string, formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.title || !data.code) return;
 
@@ -78,6 +81,7 @@ export async function updatePromotion(id: string, formData: FormData) {
 }
 
 export async function deletePromotion(id: string) {
+  await requireAdmin();
   try {
     await prisma.promotion.delete({ where: { id } });
   } catch {
@@ -88,6 +92,7 @@ export async function deletePromotion(id: string) {
 }
 
 export async function togglePromotion(id: string) {
+  await requireAdmin();
   const promotion = await prisma.promotion.findUnique({
     where: { id },
     select: { active: true },

@@ -4,6 +4,7 @@ import type { DiscountType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 function parseForm(formData: FormData) {
@@ -51,6 +52,7 @@ function parseForm(formData: FormData) {
 }
 
 export async function createCoupon(formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.code || !data.value || data.value <= 0) return;
 
@@ -66,6 +68,7 @@ export async function createCoupon(formData: FormData) {
 }
 
 export async function updateCoupon(id: string, formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.code || !data.value || data.value <= 0) return;
 
@@ -82,6 +85,7 @@ export async function updateCoupon(id: string, formData: FormData) {
 }
 
 export async function deleteCoupon(id: string) {
+  await requireAdmin();
   try {
     await prisma.coupon.delete({ where: { id } });
   } catch {
@@ -91,6 +95,7 @@ export async function deleteCoupon(id: string) {
 }
 
 export async function toggleCoupon(id: string) {
+  await requireAdmin();
   const coupon = await prisma.coupon.findUnique({
     where: { id },
     select: { active: true },

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 function readProductFields(formData: FormData) {
@@ -34,6 +35,7 @@ function readProductFields(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
+  await requireAdmin();
   const data = readProductFields(formData);
   await prisma.product.create({ data });
   revalidatePath("/admin/products");
@@ -41,6 +43,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
+  await requireAdmin();
   const data = readProductFields(formData);
   await prisma.product.update({ where: { id }, data });
   revalidatePath("/admin/products");
@@ -48,6 +51,7 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 export async function deleteProduct(id: string) {
+  await requireAdmin();
   await prisma.product.delete({ where: { id } });
   revalidatePath("/admin/products");
 }
@@ -77,6 +81,7 @@ function readVariantFields(formData: FormData) {
 }
 
 export async function createVariant(productId: string, formData: FormData) {
+  await requireAdmin();
   const data = readVariantFields(formData);
   await prisma.productVariant.create({ data: { ...data, productId } });
   revalidatePath(`/admin/products/${productId}`);
@@ -87,17 +92,20 @@ export async function updateVariant(
   variantId: string,
   formData: FormData,
 ) {
+  await requireAdmin();
   const data = readVariantFields(formData);
   await prisma.productVariant.update({ where: { id: variantId }, data });
   revalidatePath(`/admin/products/${productId}`);
 }
 
 export async function deleteVariant(productId: string, variantId: string) {
+  await requireAdmin();
   await prisma.productVariant.delete({ where: { id: variantId } });
   revalidatePath(`/admin/products/${productId}`);
 }
 
 export async function createImage(productId: string, formData: FormData) {
+  await requireAdmin();
   const url = String(formData.get("url") ?? "").trim();
   const alt = String(formData.get("alt") ?? "").trim();
   const position = Number(formData.get("position")) || 0;
@@ -111,6 +119,7 @@ export async function createImage(productId: string, formData: FormData) {
 }
 
 export async function deleteImage(productId: string, imageId: string) {
+  await requireAdmin();
   await prisma.productImage.delete({ where: { id: imageId } });
   revalidatePath(`/admin/products/${productId}`);
 }

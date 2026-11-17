@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 function parseForm(formData: FormData) {
@@ -47,6 +48,7 @@ function parseForm(formData: FormData) {
 }
 
 export async function createCollection(formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.name || !data.slug) return;
 
@@ -63,6 +65,7 @@ export async function createCollection(formData: FormData) {
 }
 
 export async function updateCollection(id: string, formData: FormData) {
+  await requireAdmin();
   const data = parseForm(formData);
   if (!data.name || !data.slug) return;
 
@@ -79,6 +82,7 @@ export async function updateCollection(id: string, formData: FormData) {
 }
 
 export async function deleteCollection(id: string) {
+  await requireAdmin();
   try {
     await prisma.collection.delete({ where: { id } });
   } catch {
