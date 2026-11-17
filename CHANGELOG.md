@@ -33,6 +33,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Fixed
 
+- Sáu liên kết ở footer (`/about`, `/faq`, `/privacy`, `/terms`, `/shipping`, `/returns`) không còn dẫn tới 404: thêm các trang thông tin tĩnh.
 - Ô danh mục ở trang chủ không còn ảnh hỏng: seed gán ảnh cho danh mục, và ảnh dự phòng là file local `/placeholder.svg` thay cho `placehold.co` (host không nằm trong `images.remotePatterns` nên bị trả 400). Thêm favicon (`src/app/icon.svg`).
 - Thay 3 ảnh Unsplash có chữ/logo in trên bao bì (ô danh mục "Dưỡng da", hai bộ sưu tập, ảnh phụ ở hero, ảnh trang đăng nhập) bằng ảnh đã soát ở cỡ 1400px.
 - Đặt hàng không còn bán vượt tồn kho khi nhiều người mua cùng lúc: kiểm kho và trừ kho gộp thành một `UPDATE … WHERE stock >= qty`; lượt dùng coupon cũng được giành bằng một update có điều kiện.

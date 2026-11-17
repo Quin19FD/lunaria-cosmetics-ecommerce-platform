@@ -54,11 +54,24 @@ async function expectHealthy(page: Page): Promise<void> {
     overflow:
       document.documentElement.scrollWidth -
       document.documentElement.clientWidth,
+    // Widest offenders first, so a failure names the element to fix.
+    wide: Array.from(document.querySelectorAll<HTMLElement>("body *"))
+      .map((el) => ({ el, right: el.getBoundingClientRect().right }))
+      .filter(({ right }) => right > window.innerWidth + 1)
+      .sort((a, b) => b.right - a.right)
+      .slice(0, 6)
+      .map(
+        ({ el, right }) =>
+          `${Math.round(right)}px <${el.tagName.toLowerCase()} class="${String(el.className).slice(0, 90)}">`,
+      ),
     broken: Array.from(document.images)
       .filter((img) => !img.complete || img.naturalWidth === 0)
       .map((img) => img.currentSrc || img.src),
   }));
-  expect(report.overflow, "horizontal overflow in px").toBeLessThanOrEqual(0);
+  expect(
+    report.overflow,
+    `horizontal overflow in px; widest: ${report.wide.join(" | ")}`,
+  ).toBeLessThanOrEqual(0);
   expect(report.broken, "images that did not load").toEqual([]);
 }
 
@@ -172,7 +185,8 @@ test("products: card tilt follows a mouse and is off for touch", async ({
   if (isTouch(info)) {
     await card.scrollIntoViewIfNeeded();
     await card.dispatchEvent("pointermove", { pointerType: "touch" });
-    expect(await transformOf(card), "touch must not tilt").toBe("none");
+    await page.waitForTimeout(500);
+    expect(await isTilted(card), "touch must not tilt").toBe(false);
   } else {
     await hoverOffCentre(page, card);
     expect(await isTilted(card), "hovered card").toBe(true);

@@ -1,0 +1,16 @@
+# Not needed to build the app on Vercel
+.claude
+.codegraph
+.husky
+su-code
+docs
+e2e
+visual
+test-results
+visual-shots
+graphify-out
+AGENTS.md
+**/AGENTS.md
+CLAUDE.md
+CLAUDE.md.bak-8sync
+tsconfig.tsbuildinfo
