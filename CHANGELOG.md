@@ -18,6 +18,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Added
 
+- Live demo trên Vercel + Neon: <https://lunaria-bice.vercel.app>; README có link và tài khoản demo (customer, admin).
 - `pnpm test:visual` + workflow `Visual check`: mở storefront trên Chromium desktop, WebKit desktop và Chromium 360px (touch); kiểm hiệu ứng tilt 3D bật với chuột, tắt với touch và `prefers-reduced-motion`; kiểm tràn ngang, ảnh hỏng, lỗi console; lưu ảnh chụp thành artifact.
 - Job định kỳ `/api/cron/release-stale-orders` (Vercel Cron, mỗi ngày): huỷ đơn thẻ `PENDING`/`UNPAID` quá 1 giờ và trả tồn kho + lượt dùng coupon. Huỷ PaymentIntent trên Stripe trước; Stripe từ chối (đã trả tiền) thì bỏ qua đơn đó. Route yêu cầu `Authorization: Bearer $CRON_SECRET`.
 - SEO: `sitemap.xml` (sản phẩm, bộ sưu tập), `robots.txt`, ảnh Open Graph mặc định, metadata + canonical + Open Graph cho trang sản phẩm và bộ sưu tập, JSON-LD `Product` (giá theo biến thể, tồn kho, điểm đánh giá lấy từ review thật).
@@ -33,6 +34,8 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Fixed
 
+- `.vercelignore` giờ loại `.env*` và file khoá: khi có `.vercelignore`, Vercel CLI không còn đọc `.gitignore`, nên `vercel deploy` từ máy đã upload cả `.env` local.
+- Log của seed không còn in `admin123` khi mật khẩu super admin lấy từ `SEED_SUPER_ADMIN_PASSWORD`.
 - Màn hình 360px không còn cuộn ngang: form email ở trang chủ và trang bộ sưu tập co lại đúng (`min-w-0`), hàng nút mua ở trang sản phẩm xuống hai dòng ("Mua ngay" một dòng riêng). Phát hiện bởi `pnpm test:visual`.
 - Sáu liên kết ở footer (`/about`, `/faq`, `/privacy`, `/terms`, `/shipping`, `/returns`) không còn dẫn tới 404: thêm các trang thông tin tĩnh.
 - Ô danh mục ở trang chủ không còn ảnh hỏng: seed gán ảnh cho danh mục, và ảnh dự phòng là file local `/placeholder.svg` thay cho `placehold.co` (host không nằm trong `images.remotePatterns` nên bị trả 400). Thêm favicon (`src/app/icon.svg`).

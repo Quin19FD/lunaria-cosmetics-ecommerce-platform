@@ -14,3 +14,23 @@ AGENTS.md
 CLAUDE.md
 CLAUDE.md.bak-8sync
 tsconfig.tsbuildinfo
+
+# A .vercelignore replaces .gitignore for `vercel deploy`, so everything
+# secret or local that .gitignore covers must be repeated here.
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.session
+*.pkl
+.cursor
+.omp
+agents
+graft
+screenshots
+postgres-data
+playwright-report

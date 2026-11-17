@@ -555,7 +555,11 @@ async function main() {
   await seedCoupons();
   await seedPromotions();
   await seedCollections();
-  console.log("   • admin: admin@lunaria.beauty / admin123");
+  console.log(
+    process.env.SEED_SUPER_ADMIN_PASSWORD
+      ? "   • admin: admin@lunaria.beauty / (SEED_SUPER_ADMIN_PASSWORD)"
+      : "   • admin: admin@lunaria.beauty / admin123",
+  );
   console.log("   • customer: demo@lunaria.beauty / 123456");
   console.log("✅ Seed complete.");
 }

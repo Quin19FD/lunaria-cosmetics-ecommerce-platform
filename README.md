@@ -6,7 +6,7 @@ A full-stack cosmetics store built with Next.js 15 (App Router), Prisma, Postgre
 
 ![Lunaria home page](docs/images/home-hero.png)
 
-**Live demo:** _coming soon_
+**Live demo:** <https://lunaria-bice.vercel.app> (sign in with the demo accounts below; card payment is not switched on there yet)
 
 | Products                                          | Product detail                                        |
 | ------------------------------------------------- | ----------------------------------------------------- |
@@ -98,9 +98,10 @@ Environment variables (names only; see `.env.example`):
 | Role        | Email                  | Password   |
 | ----------- | ---------------------- | ---------- |
 | Super admin | `admin@lunaria.beauty` | `admin123` |
+| Admin       | `staff@lunaria.beauty` | `staff123` |
 | Customer    | `demo@lunaria.beauty`  | `123456`   |
 
-These exist only in seeded development and demo databases. Stripe runs in test mode: use card `4242 4242 4242 4242`.
+These exist only in seeded development and demo databases. On the live demo the super admin password is different and private; use the admin or customer account. Stripe runs in test mode: use card `4242 4242 4242 4242`.
 
 ## Tests
 
