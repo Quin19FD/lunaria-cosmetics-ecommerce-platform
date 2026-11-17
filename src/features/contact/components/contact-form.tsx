@@ -100,10 +100,15 @@ export function ContactForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
-          className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="focus:border-brand-500 focus:ring-brand-500 w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:ring-1 focus:outline-none"
         />
       </div>
-      <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isLoading}>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full sm:w-auto"
+        disabled={isLoading}
+      >
         <Send className="h-4 w-4" />
         {isLoading ? "Đang gửi..." : "Gửi tin nhắn"}
       </Button>

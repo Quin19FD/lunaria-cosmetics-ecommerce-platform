@@ -38,9 +38,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           ))}
         </div>
       ) : (
-        <p className="text-neutral-500">
-          Không tìm thấy sản phẩm nào phù hợp.
-        </p>
+        <p className="text-neutral-500">Không tìm thấy sản phẩm nào phù hợp.</p>
       )}
     </div>
   );

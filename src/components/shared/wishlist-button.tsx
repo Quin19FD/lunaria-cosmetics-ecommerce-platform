@@ -76,7 +76,7 @@ export function WishlistButton({ productId, className }: WishlistButtonProps) {
           "transition-colors",
           active
             ? "fill-brand-500 text-brand-500"
-            : "fill-transparent text-neutral-500 hover:text-brand-500",
+            : "hover:text-brand-500 fill-transparent text-neutral-500",
         )}
       />
     </button>

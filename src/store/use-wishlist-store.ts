@@ -15,7 +15,6 @@ export const useWishlistStore = create<WishlistStore>((set, get) => ({
     set((state) =>
       state.ids.includes(id) ? state : { ids: [...state.ids, id] },
     ),
-  remove: (id) =>
-    set((state) => ({ ids: state.ids.filter((i) => i !== id) })),
+  remove: (id) => set((state) => ({ ids: state.ids.filter((i) => i !== id) })),
   has: (id) => get().ids.includes(id),
 }));

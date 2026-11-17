@@ -5,3 +5,13 @@ build
 postgres-data
 pnpm-lock.yaml
 package-lock.json
+
+# AI-tool / harness files (not product code)
+**/AGENTS.md
+CLAUDE.md
+CLAUDE.md.bak-8sync
+.omp
+.claude
+agents
+su-code
+test-results

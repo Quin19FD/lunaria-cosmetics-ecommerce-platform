@@ -41,7 +41,7 @@ export function CollectionCard({ collection, index }: CollectionCardProps) {
         )}
       >
         {/* Label */}
-        <p className="text-xs font-semibold tracking-widest text-brand-500 uppercase">
+        <p className="text-brand-500 text-xs font-semibold tracking-widest uppercase">
           {collection.label}
         </p>
 

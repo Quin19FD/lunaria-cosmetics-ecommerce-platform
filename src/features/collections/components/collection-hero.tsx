@@ -28,14 +28,14 @@ export function CollectionHero({ collection }: CollectionHeroProps) {
       <div className="relative z-10 mx-auto flex h-full max-w-7xl items-center px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="max-w-xl">
           {/* Badge */}
-          <span className="inline-block rounded-full bg-brand-500 px-4 py-1.5 text-[11px] font-semibold tracking-widest text-white uppercase">
+          <span className="bg-brand-500 inline-block rounded-full px-4 py-1.5 text-[11px] font-semibold tracking-widest text-white uppercase">
             {collection.badge}
           </span>
 
           {/* Headline */}
-          <h1 className="mt-5 font-serif text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 font-serif text-4xl leading-tight font-bold text-white sm:text-5xl lg:text-6xl">
             {collection.headline}{" "}
-            <span className="italic text-brand-300">
+            <span className="text-brand-300 italic">
               {collection.highlightWord}
             </span>
           </h1>

@@ -41,44 +41,53 @@ export function FlashSaleBar() {
   const padTime = (num: number) => String(num).padStart(2, "0");
 
   return (
-    <div className={cn(
-      "w-full bg-gradient-to-r from-neutral-900 via-brand-700 to-brand-500",
-      "py-3 px-4 sm:px-6 lg:px-8",
-      "flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6"
-    )}>
+    <div
+      className={cn(
+        "via-brand-700 to-brand-500 w-full bg-gradient-to-r from-neutral-900",
+        "px-4 py-3 sm:px-6 lg:px-8",
+        "flex flex-col items-center justify-between gap-4 sm:flex-row sm:gap-6",
+      )}
+    >
       {/* Left Side - Flash Sale Text */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" strokeWidth={3} />
+        <Zap
+          className="h-5 w-5 flex-shrink-0 text-white sm:h-6 sm:w-6"
+          strokeWidth={3}
+        />
         <div className="flex flex-col gap-1">
-          <h2 className="text-sm sm:text-base font-bold text-white font-serif">
+          <h2 className="font-serif text-sm font-bold text-white sm:text-base">
             FLASH SALE CUỐI TUẦN
           </h2>
-          <p className="text-xs sm:text-sm text-white/80 font-sans">
+          <p className="font-sans text-xs text-white/80 sm:text-sm">
             Giảm đến 50% cho tất cả sản phẩm chăm sóc da
           </p>
         </div>
       </div>
 
       {/* Right Side - Countdown Timer */}
-      <div className="flex items-center gap-2 sm:gap-3 whitespace-nowrap">
-        <span className="text-xs sm:text-sm text-white/90 font-sans font-semibold">
+      <div className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
+        <span className="font-sans text-xs font-semibold text-white/90 sm:text-sm">
           KẾT THÚC TRONG:
         </span>
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Hours */}
-          <div className="bg-white/20 rounded-lg px-2 sm:px-3 py-1 text-white font-bold text-sm sm:text-base">
+          <div className="rounded-lg bg-white/20 px-2 py-1 text-sm font-bold text-white sm:px-3 sm:text-base">
             {padTime(timeLeft.hours)}
           </div>
-          <span className="text-white/80 font-bold text-sm sm:text-base">:</span>
+          <span className="text-sm font-bold text-white/80 sm:text-base">
+            :
+          </span>
 
           {/* Minutes */}
-          <div className="bg-white/20 rounded-lg px-2 sm:px-3 py-1 text-white font-bold text-sm sm:text-base">
+          <div className="rounded-lg bg-white/20 px-2 py-1 text-sm font-bold text-white sm:px-3 sm:text-base">
             {padTime(timeLeft.minutes)}
           </div>
-          <span className="text-white/80 font-bold text-sm sm:text-base">:</span>
+          <span className="text-sm font-bold text-white/80 sm:text-base">
+            :
+          </span>
 
           {/* Seconds */}
-          <div className="bg-white/20 rounded-lg px-2 sm:px-3 py-1 text-white font-bold text-sm sm:text-base">
+          <div className="rounded-lg bg-white/20 px-2 py-1 text-sm font-bold text-white sm:px-3 sm:text-base">
             {padTime(timeLeft.seconds)}
           </div>
         </div>

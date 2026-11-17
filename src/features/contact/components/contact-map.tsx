@@ -5,7 +5,7 @@ export function ContactMap() {
     <div className="relative overflow-hidden rounded-2xl bg-neutral-200">
       <div className="flex aspect-[16/7] items-center justify-center">
         <div className="text-center">
-          <MapPin className="mx-auto h-10 w-10 text-brand-500" />
+          <MapPin className="text-brand-500 mx-auto h-10 w-10" />
           <p className="mt-2 text-sm font-medium text-neutral-600">
             123 Đường Tiên Lụa, Quận Bình Tân
           </p>

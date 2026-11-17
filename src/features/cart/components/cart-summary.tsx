@@ -43,7 +43,7 @@ export function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
         </div>
 
         {freeShippingRemaining > 0 && (
-          <p className="rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-600">
+          <p className="bg-brand-50 text-brand-600 rounded-lg px-3 py-2 text-xs">
             Mua thêm {formatPrice(freeShippingRemaining)} để được miễn phí vận
             chuyển
           </p>
@@ -52,7 +52,7 @@ export function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
         <div className="border-t border-neutral-200 pt-3">
           <div className="flex justify-between">
             <span className="font-semibold text-neutral-900">Tổng cộng</span>
-            <span className="text-lg font-bold text-brand-500">
+            <span className="text-brand-500 text-lg font-bold">
               {formatPrice(total)}
             </span>
           </div>
@@ -70,11 +70,11 @@ export function CartSummary({ subtotal, itemCount }: CartSummaryProps) {
       {/* Trust */}
       <div className="mt-6 space-y-2 border-t border-neutral-100 pt-4">
         <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <Truck className="h-4 w-4 text-brand-500" />
+          <Truck className="text-brand-500 h-4 w-4" />
           Miễn phí vận chuyển cho đơn từ 500k
         </div>
         <div className="flex items-center gap-2 text-xs text-neutral-500">
-          <ShieldCheck className="h-4 w-4 text-brand-500" />
+          <ShieldCheck className="text-brand-500 h-4 w-4" />
           Sản phẩm chính hãng 100%
         </div>
       </div>
