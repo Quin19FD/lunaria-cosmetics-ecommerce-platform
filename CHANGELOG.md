@@ -7,6 +7,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Security
 
+- Cleared all `pnpm audit` findings (production and dev): zod 4.6.7 and vitest 4 as direct upgrades; sharp 0.35.5, deepmerge-ts 8, js-yaml, esbuild, brace-expansion and minimatch 11 via pnpm overrides.
 - Đánh giá sản phẩm không còn hiển thị email của người viết khi họ chưa đặt tên (hiển thị "Khách hàng").
 - Mọi Server Action trong `/admin` giờ tự gọi `requireAdmin()` — trước đây chỉ layout chặn việc xem trang, nên khách hàng đã đăng nhập có thể gọi thẳng action (kể cả tự nâng mình lên `SUPER_ADMIN` qua `updateUserRole`).
 - `requireAdmin()` đọc lại role từ database thay vì tin role trong JWT, nên admin bị hạ quyền mất quyền ngay.
