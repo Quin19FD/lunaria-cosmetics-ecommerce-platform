@@ -6,11 +6,11 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { computeDiscount } from "@/modules/coupons/discount";
+import { couponIneligibility } from "@/modules/coupons/eligibility";
 
 import { sendOrderConfirmationEmail } from "./emails";
-
-const FREE_SHIPPING_THRESHOLD = 500000;
-const SHIPPING_FEE = 30000;
+import { OutOfStockError, reserveStock } from "./inventory";
+import { orderTotal, shippingFeeFor } from "./pricing";
 
 export interface PlaceOrderInput {
   items: { variantId: string; quantity: number }[];
@@ -98,39 +98,46 @@ export async function placeOrder(
           unitPrice,
         });
 
-        await tx.productVariant.update({
-          where: { id: variant.id },
-          data: { stock: { decrement: line.quantity } },
-        });
+        try {
+          await reserveStock(tx, variant.id, line.quantity);
+        } catch (e) {
+          if (!(e instanceof OutOfStockError)) throw e;
+          throw new Error(`Sản phẩm "${variant.name}" vừa hết hàng.`);
+        }
       }
 
-      const shippingCost =
-        subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+      const shippingCost = shippingFeeFor(subtotal);
 
       // Validate + consume coupon atomically.
       let discount = 0;
       let couponCode: string | null = null;
       const rawCode = input.couponCode?.trim().toUpperCase();
       if (rawCode) {
+        const invalid = new Error(
+          "Mã giảm giá không hợp lệ hoặc không đủ điều kiện.",
+        );
         const coupon = await tx.coupon.findUnique({ where: { code: rawCode } });
-        const valid =
-          coupon &&
-          coupon.active &&
-          (!coupon.expiresAt || coupon.expiresAt >= new Date()) &&
-          (coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit) &&
-          subtotal >= coupon.minOrder;
-        if (!valid) {
-          throw new Error("Mã giảm giá không hợp lệ hoặc không đủ điều kiện.");
+        if (!coupon || couponIneligibility(coupon, subtotal, new Date())) {
+          throw invalid;
         }
-        discount = computeDiscount(coupon, subtotal);
-        couponCode = coupon.code;
-        await tx.coupon.update({
-          where: { id: coupon.id },
+        // Claim one use only while uses remain: check + increment in one
+        // conditional UPDATE, so concurrent checkouts cannot overuse it.
+        const claimed = await tx.coupon.updateMany({
+          where: {
+            id: coupon.id,
+            OR: [
+              { usageLimit: null },
+              { usedCount: { lt: tx.coupon.fields.usageLimit } },
+            ],
+          },
           data: { usedCount: { increment: 1 } },
         });
+        if (claimed.count !== 1) throw invalid;
+        discount = computeDiscount(coupon, subtotal);
+        couponCode = coupon.code;
       }
 
-      const total = Math.max(0, subtotal + shippingCost - discount);
+      const total = orderTotal({ subtotal, shippingCost, discount });
 
       const order = await tx.order.create({
         data: {

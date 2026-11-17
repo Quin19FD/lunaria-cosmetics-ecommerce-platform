@@ -17,7 +17,7 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 ### Added
 
 - CI GitHub Actions: `pnpm check` (typecheck, lint, format, unit test) trên Linux/Windows/macOS; `pnpm build` + e2e Playwright trên Postgres service.
-- Unit test với Vitest (`pnpm test`), bắt đầu từ logic rate limit; e2e `e2e/rate-limit.spec.ts` kiểm khoá đăng nhập sau 5 lần sai.
+- Unit test với Vitest (`pnpm test`), cho rate limit, giảm giá, phí ship, điều kiện coupon và hoàn kho; e2e `e2e/rate-limit.spec.ts` kiểm khoá đăng nhập sau 5 lần sai; `e2e/inventory.spec.ts` kiểm huỷ đơn (admin và Stripe) trả kho đúng một lần.
 - E2E `e2e/admin-authz.spec.ts`: CUSTOMER và ADMIN không đổi được role qua action; SUPER_ADMIN là đối chứng.
 - Thanh toán Stripe thật: tạo PaymentIntent, form thẻ dùng Stripe Elements, và webhook `/api/webhooks/stripe` xác minh chữ ký rồi xác nhận đơn (idempotent).
 - Email xác nhận đơn hàng qua SMTP (Nodemailer) — gửi khi đặt COD/chuyển khoản và khi thanh toán thẻ thành công.
@@ -26,7 +26,16 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 - Mô hình Prisma `Coupon`, `Promotion`, `Collection` và lịch sử migration Prisma (thay cho `db push`).
 - Bộ kiểm thử e2e Playwright (storefront, auth, admin, webhook Stripe).
 
+### Fixed
+
+- Đặt hàng không còn bán vượt tồn kho khi nhiều người mua cùng lúc: kiểm kho và trừ kho gộp thành một `UPDATE … WHERE stock >= qty`; lượt dùng coupon cũng được giành bằng một update có điều kiện.
+- Huỷ/hoàn tiền đơn trả lại tồn kho **và** lượt dùng coupon, đúng một lần kể cả khi bấm lặp hoặc gọi đồng thời; đơn đã huỷ không mở lại được.
+- Webhook Stripe `payment_intent.canceled` huỷ đơn thẻ chưa thanh toán và trả kho (`payment_failed` được bỏ qua vì khách có thể thử thẻ khác).
+- Đơn tạo từ admin giờ trừ tồn kho (trước đây không trừ, nên huỷ đơn làm kho tăng ảo); trạng thái đơn được validate bằng Zod.
+
 ### Changed
+
+- Quy tắc phí ship, tổng tiền và điều kiện coupon gom về `modules/orders/pricing.ts` và `modules/coupons/eligibility.ts`, dùng chung cho server và giao diện giỏ/checkout.
 
 - README viết lại: ảnh, tính năng, tech stack, kiến trúc, cách chạy bằng Docker + seed, tài khoản demo, cách chạy test, badge CI.
 - Bỏ khỏi git cấu hình AI tool (`agents/`, `.cursor/`, `.omp/`) và ảnh debug; ảnh đẹp chuyển sang `docs/images/`.
