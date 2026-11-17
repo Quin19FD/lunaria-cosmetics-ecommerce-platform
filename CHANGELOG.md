@@ -28,5 +28,8 @@ Mọi thay đổi đáng kể ghi vào đây — format [Keep a Changelog](https
 
 ### Changed
 
+- README viết lại: ảnh, tính năng, tech stack, kiến trúc, cách chạy bằng Docker + seed, tài khoản demo, cách chạy test, badge CI.
+- Bỏ khỏi git cấu hình AI tool (`agents/`, `.cursor/`, `.omp/`) và ảnh debug; ảnh đẹp chuyển sang `docs/images/`.
+
 - Khuyến mãi & bộ sưu tập đọc từ database thay vì dữ liệu mock; service chuyển sang async Prisma.
 - Thay luồng thanh toán thẻ mô phỏng bằng luồng Stripe thật (đơn chỉ chuyển `PAID` qua webhook).
