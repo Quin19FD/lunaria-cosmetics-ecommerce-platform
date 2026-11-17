@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CartItemRow, CartSummary, EmptyCart } from "@/features/cart";
 import { useMounted } from "@/hooks/use-mounted";
 import { getCartItems, type CartLine } from "@/modules/cart/actions";
@@ -13,6 +15,8 @@ export default function CartPage() {
 
   const [lines, setLines] = useState<CartLine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   const ids = useMemo(() => items.map((i) => i.variantId), [items]);
 
@@ -25,15 +29,22 @@ export default function CartPage() {
     }
     let active = true;
     setLoading(true);
-    getCartItems(ids).then((result) => {
-      if (!active) return;
-      setLines(result);
-      setLoading(false);
-    });
+    setFailed(false);
+    getCartItems(ids)
+      .then((result) => {
+        if (!active) return;
+        setLines(result);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
-  }, [mounted, ids]);
+  }, [mounted, ids, attempt]);
 
   const cartLines = useMemo(() => {
     const byVariant = new Map(lines.map((l) => [l.variantId, l]));
@@ -54,9 +65,21 @@ export default function CartPage() {
   const totalItems = cartLines.reduce((sum, { quantity }) => sum + quantity, 0);
 
   if (!mounted || loading) {
+    return <CartSkeleton />;
+  }
+
+  if (failed) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="border-brand-500 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+      <div className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
+        <h1 className="font-serif text-2xl font-bold text-neutral-900">
+          Không tải được giỏ hàng
+        </h1>
+        <p className="mt-2 text-sm text-neutral-500">
+          Có lỗi kết nối. Sản phẩm trong giỏ vẫn được giữ nguyên.
+        </p>
+        <Button className="mt-6" onClick={() => setAttempt((n) => n + 1)}>
+          Thử lại
+        </Button>
       </div>
     );
   }
@@ -85,6 +108,34 @@ export default function CartPage() {
         <div className="w-full flex-shrink-0 lg:w-80">
           <CartSummary subtotal={subtotal} itemCount={totalItems} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Mirrors the loaded layout so nothing jumps when lines arrive. */
+function CartSkeleton() {
+  return (
+    <div
+      className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"
+      role="status"
+      aria-label="Đang tải giỏ hàng"
+    >
+      <Skeleton className="h-8 w-40" />
+      <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:gap-10">
+        <div className="min-w-0 flex-1 space-y-5 rounded-2xl border border-neutral-100 bg-white p-5 shadow-sm sm:p-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <Skeleton className="h-24 w-24 flex-shrink-0 rounded-xl sm:h-28 sm:w-28" />
+              <div className="flex-1 space-y-2 pt-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/3" />
+                <Skeleton className="mt-6 h-8 w-28" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <Skeleton className="h-80 w-full flex-shrink-0 rounded-2xl lg:w-80" />
       </div>
     </div>
   );

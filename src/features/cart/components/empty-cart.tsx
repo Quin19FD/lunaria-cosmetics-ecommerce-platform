@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 export function EmptyCart() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100">
-        <ShoppingBag className="h-10 w-10 text-neutral-400" />
+      <div className="bg-brand-50 ring-brand-100 flex h-20 w-20 items-center justify-center rounded-full ring-8">
+        <ShoppingBag aria-hidden className="text-brand-400 h-10 w-10" />
       </div>
       <h2 className="mt-6 font-serif text-2xl font-bold text-neutral-900">
         Giỏ hàng trống
