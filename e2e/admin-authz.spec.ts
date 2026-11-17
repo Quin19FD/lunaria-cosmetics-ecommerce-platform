@@ -1,10 +1,10 @@
 import {
   test,
   expect,
-  type APIResponse,
   type Browser,
   type BrowserContext,
   type Page,
+  type Response,
 } from "@playwright/test";
 import { PrismaClient, type UserRole } from "@prisma/client";
 
@@ -74,24 +74,48 @@ async function captureRoleForm(
   }
 }
 
+/**
+ * Re-submits the captured form from `ctx`'s session the way a browser with
+ * JavaScript disabled would: a native multipart POST to the page URL. Returns
+ * the response to the POST itself (before any redirect is followed).
+ */
 async function submitRoleForm(
   ctx: BrowserContext,
   fields: FormFields,
   role: UserRole,
-) {
-  const multipart: Record<string, string> = {};
-  for (const [k, v] of fields) multipart[k] = k === "role" ? role : v;
-  const baseURL = test.info().project.use.baseURL ?? "";
-  return ctx.request.post("/admin/users", {
-    multipart,
-    headers: { Origin: baseURL },
-    maxRedirects: 0,
-    failOnStatusCode: false,
-  });
+): Promise<Response> {
+  const entries = fields.map(([k, v]): [string, string] =>
+    k === "role" ? [k, role] : [k, v],
+  );
+  const page = await ctx.newPage();
+  await page.goto("/");
+  const [res] = await Promise.all([
+    page.waitForResponse(
+      (r) =>
+        r.request().method() === "POST" &&
+        new URL(r.url()).pathname === "/admin/users",
+    ),
+    page.evaluate((formEntries) => {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.enctype = "multipart/form-data";
+      form.action = "/admin/users";
+      for (const [name, value] of formEntries) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    }, entries),
+  ]);
+  return res;
 }
 
 /** The action redirected (rejected by the guard) to `path`. */
-function expectRedirectTo(res: APIResponse, path: string) {
+function expectRedirectTo(res: Response, path: string) {
   expect(res.status()).toBeGreaterThanOrEqual(300);
   expect(res.status()).toBeLessThan(400);
   const location = res.headers()["location"] ?? "";
@@ -125,7 +149,8 @@ test("SUPER_ADMIN replaying the role form succeeds (control)", async ({
   try {
     await login(await ctx.newPage(), SUPER_ADMIN.email, SUPER_ADMIN.password);
     const res = await submitRoleForm(ctx, fields, "ADMIN");
-    expect(res.status()).toBe(200);
+    // On failure, show the replayed field names to diagnose encoding changes.
+    expect(res.status(), fields.map(([k]) => k).join(", ")).toBe(200);
     expect(await roleOf(TARGET_EMAIL)).toBe("ADMIN");
   } finally {
     await ctx.close();
