@@ -38,13 +38,20 @@ async function settle(page: Page): Promise<void> {
     }
     window.scrollTo(0, 0);
   });
-  await page
-    .waitForFunction(
-      () => Array.from(document.images).every((img) => img.complete),
-      undefined,
-      { timeout: 20_000 },
-    )
-    .catch(() => undefined); // reported by expectHealthy as still-loading
+  // A lazy image the quick scroll passed may not have started (WebKit): bring
+  // each one into view and give it time. Still unloaded => expectHealthy fails.
+  await page.evaluate(async () => {
+    const pending = Array.from(document.images).filter((img) => !img.complete);
+    for (const img of pending) {
+      img.scrollIntoView({ block: "center" });
+      await Promise.race([
+        new Promise((r) => img.addEventListener("load", r, { once: true })),
+        new Promise((r) => img.addEventListener("error", r, { once: true })),
+        new Promise((r) => setTimeout(r, 5000)),
+      ]);
+    }
+    window.scrollTo(0, 0);
+  });
   await page.waitForTimeout(600);
 }
 
@@ -55,11 +62,13 @@ async function expectHealthy(page: Page): Promise<void> {
       document.documentElement.scrollWidth -
       document.documentElement.clientWidth,
     // Widest offenders first, so a failure names the element to fix.
+    // Measured against the layout width: a mobile browser zooms out to fit
+    // overflowing content, which makes window.innerWidth grow with it.
     wide: Array.from(document.querySelectorAll<HTMLElement>("body *"))
       .map((el) => ({ el, right: el.getBoundingClientRect().right }))
-      .filter(({ right }) => right > window.innerWidth + 1)
+      .filter(({ right }) => right > document.documentElement.clientWidth + 1)
       .sort((a, b) => b.right - a.right)
-      .slice(0, 6)
+      .slice(0, 8)
       .map(
         ({ el, right }) =>
           `${Math.round(right)}px <${el.tagName.toLowerCase()} class="${String(el.className).slice(0, 90)}">`,
@@ -164,8 +173,8 @@ test("home: hero parallax and full page", async ({ page }, info) => {
     await page.mouse.move(0, 0);
   }
 
-  await expectHealthy(page);
   await shot(page, info, "03-home-full", true);
+  await expectHealthy(page);
 });
 
 test("products: card tilt follows a mouse and is off for touch", async ({
@@ -233,8 +242,8 @@ test("product detail: gallery", async ({ page }, info) => {
     await shot(page, info, "08-product-detail-image-2");
   }
 
-  await expectHealthy(page);
   await shot(page, info, "09-product-detail-full", true);
+  await expectHealthy(page);
 });
 
 test("collections: stacked plates", async ({ page }, info) => {
@@ -251,8 +260,8 @@ test("collections: stacked plates", async ({ page }, info) => {
     await page.mouse.move(0, 0);
   }
 
-  await expectHealthy(page);
   await shot(page, info, "11-collections-full", true);
+  await expectHealthy(page);
 });
 
 for (const [name, url] of [
@@ -264,8 +273,8 @@ for (const [name, url] of [
   test(`static page ${url}`, async ({ page }, info) => {
     await page.goto(url);
     await settle(page);
-    await expectHealthy(page);
     await shot(page, info, name, true);
+    await expectHealthy(page);
   });
 }
 
