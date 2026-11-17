@@ -9,7 +9,8 @@ import {
 
 export const metadata: Metadata = {
   title: "Liên hệ",
-  description: "Liên hệ với Lunaria Beauty — chúng tôi luôn sẵn sàng hỗ trợ bạn",
+  description:
+    "Liên hệ với Lunaria Beauty — chúng tôi luôn sẵn sàng hỗ trợ bạn",
 };
 
 export default function ContactPage() {
@@ -26,7 +27,8 @@ export default function ContactPage() {
                 Gửi tin nhắn cho chúng tôi
               </h2>
               <p className="mt-1 text-sm text-neutral-500">
-                Điền thông tin bên dưới, đội ngũ Lunaria sẽ liên hệ lại bạn sớm nhất.
+                Điền thông tin bên dưới, đội ngũ Lunaria sẽ liên hệ lại bạn sớm
+                nhất.
               </p>
               <div className="mt-6">
                 <ContactForm />

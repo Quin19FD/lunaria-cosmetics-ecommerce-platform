@@ -30,14 +30,14 @@ export function ProductsSortBar({
       {/* Filter Button - Mobile Only */}
       <button
         onClick={onToggleFilters}
-        className="lg:hidden flex items-center gap-2 px-3 py-2 border border-neutral-200 rounded-lg hover:border-neutral-300 transition-colors"
+        className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 transition-colors hover:border-neutral-300 lg:hidden"
       >
-        <SlidersHorizontal className="w-4 h-4 text-neutral-600" />
+        <SlidersHorizontal className="h-4 w-4 text-neutral-600" />
         <span className="text-sm font-medium text-neutral-700">Bộ lọc</span>
       </button>
 
       {/* Center: Total Products */}
-      <div className="hidden md:block flex-1 px-4">
+      <div className="hidden flex-1 px-4 md:block">
         <p className="text-sm text-neutral-500">
           Hiển thị {totalProducts} sản phẩm
         </p>
@@ -50,9 +50,9 @@ export function ProductsSortBar({
           value={sort}
           onChange={(e) => onSortChange(e.target.value)}
           className={cn(
-            "border border-neutral-200 rounded-lg px-3 py-2 text-sm",
-            "bg-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none",
-            "cursor-pointer transition-colors hover:border-neutral-300"
+            "rounded-lg border border-neutral-200 px-3 py-2 text-sm",
+            "focus:border-brand-500 focus:ring-brand-500 bg-white outline-none focus:ring-1",
+            "cursor-pointer transition-colors hover:border-neutral-300",
           )}
         >
           {SORT_OPTIONS.map((option) => (

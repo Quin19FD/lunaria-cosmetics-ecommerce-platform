@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import slugify from "slugify";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 function parseForm(formData: FormData) {
@@ -25,6 +26,7 @@ function parseForm(formData: FormData) {
 }
 
 export async function createCategory(formData: FormData) {
+  await requireAdmin();
   const { name, slug, description, parentId } = parseForm(formData);
   if (!name || !slug) return;
 
@@ -37,6 +39,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
+  await requireAdmin();
   const { name, slug, description, parentId } = parseForm(formData);
   if (!name || !slug) return;
 
@@ -56,6 +59,7 @@ export async function updateCategory(id: string, formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
+  await requireAdmin();
   try {
     await prisma.category.delete({ where: { id } });
   } catch {

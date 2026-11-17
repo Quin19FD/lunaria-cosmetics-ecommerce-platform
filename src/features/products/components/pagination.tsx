@@ -62,16 +62,16 @@ export function Pagination({
   const isNextDisabled = currentPage === totalPages;
 
   return (
-    <div className="flex items-center justify-center gap-1 mt-8">
+    <div className="mt-8 flex items-center justify-center gap-1">
       {/* Previous Button */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={isPrevDisabled}
         className={cn(
-          "flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 transition-colors",
           isPrevDisabled
-            ? "text-neutral-400 cursor-not-allowed"
-            : "text-neutral-700 hover:bg-neutral-100"
+            ? "cursor-not-allowed text-neutral-400"
+            : "text-neutral-700 hover:bg-neutral-100",
         )}
         aria-label="Previous page"
       >
@@ -85,7 +85,7 @@ export function Pagination({
             return (
               <span
                 key={`ellipsis-${index}`}
-                className="flex items-center justify-center w-10 h-10 text-neutral-400"
+                className="flex h-10 w-10 items-center justify-center text-neutral-400"
               >
                 ...
               </span>
@@ -100,10 +100,10 @@ export function Pagination({
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
               className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-colors",
+                "flex h-10 w-10 items-center justify-center rounded-lg font-medium transition-colors",
                 isActive
                   ? "bg-brand-500 text-white"
-                  : "text-neutral-700 hover:bg-neutral-100"
+                  : "text-neutral-700 hover:bg-neutral-100",
               )}
               aria-label={`Page ${pageNum}`}
               aria-current={isActive ? "page" : undefined}
@@ -119,10 +119,10 @@ export function Pagination({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={isNextDisabled}
         className={cn(
-          "flex items-center justify-center w-10 h-10 rounded-lg border border-neutral-200 transition-colors",
+          "flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 transition-colors",
           isNextDisabled
-            ? "text-neutral-400 cursor-not-allowed"
-            : "text-neutral-700 hover:bg-neutral-100"
+            ? "cursor-not-allowed text-neutral-400"
+            : "text-neutral-700 hover:bg-neutral-100",
         )}
         aria-label="Next page"
       >

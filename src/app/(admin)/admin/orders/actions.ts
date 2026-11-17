@@ -4,16 +4,21 @@ import type { OrderStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 
 export async function updateOrderStatus(id: string, formData: FormData) {
+  await requireAdmin();
   const status = formData.get("status") as OrderStatus;
   const trackingCode =
     String(formData.get("trackingCode") ?? "").trim() || null;
 
   const order = await prisma.order.findUnique({
     where: { id },
-    select: { status: true, items: { select: { variantId: true, quantity: true } } },
+    select: {
+      status: true,
+      items: { select: { variantId: true, quantity: true } },
+    },
   });
   if (!order) throw new Error("Không tìm thấy đơn hàng.");
 
@@ -39,6 +44,7 @@ export async function updateOrderStatus(id: string, formData: FormData) {
 }
 
 export async function createOrder(formData: FormData) {
+  await requireAdmin();
   const userId = String(formData.get("userId") ?? "").trim();
   if (!userId) throw new Error("Vui lòng chọn khách hàng.");
 

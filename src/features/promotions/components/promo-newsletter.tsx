@@ -14,10 +14,10 @@ export function PromoNewsletter() {
   }
 
   return (
-    <section className="mx-4 mb-12 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50 to-white sm:mx-6 lg:mx-auto lg:max-w-4xl">
-      <div className="border border-brand-100 rounded-2xl px-6 py-12 text-center sm:px-12 lg:py-14">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
-          <Bell className="h-5 w-5 text-brand-500" />
+    <section className="from-brand-50 mx-4 mb-12 overflow-hidden rounded-2xl bg-gradient-to-br to-white sm:mx-6 lg:mx-auto lg:max-w-4xl">
+      <div className="border-brand-100 rounded-2xl border px-6 py-12 text-center sm:px-12 lg:py-14">
+        <div className="bg-brand-100 mx-auto flex h-12 w-12 items-center justify-center rounded-full">
+          <Bell className="text-brand-500 h-5 w-5" />
         </div>
 
         <h2 className="mt-5 font-serif text-xl font-bold text-neutral-900 sm:text-2xl">
@@ -50,7 +50,7 @@ export function PromoNewsletter() {
             />
             <button
               type="submit"
-              className="rounded-full bg-brand-500 px-5 py-2.5 text-xs font-medium text-white transition-colors hover:bg-brand-600"
+              className="bg-brand-500 hover:bg-brand-600 rounded-full px-5 py-2.5 text-xs font-medium text-white transition-colors"
             >
               Đăng ký
             </button>

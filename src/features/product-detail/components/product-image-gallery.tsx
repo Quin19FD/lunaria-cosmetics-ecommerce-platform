@@ -17,9 +17,7 @@ export function ProductImageGallery({
   name,
 }: ProductImageGalleryProps) {
   const galleryImages =
-    images.length > 0
-      ? images
-      : [image, image, image, image];
+    images.length > 0 ? images : [image, image, image, image];
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedImage = galleryImages[selectedIndex];
@@ -27,7 +25,7 @@ export function ProductImageGallery({
   return (
     <div>
       {/* Main image */}
-      <div className="relative aspect-square max-h-[480px] w-full overflow-hidden rounded-2xl bg-brand-50">
+      <div className="bg-brand-50 relative aspect-square max-h-[480px] w-full overflow-hidden rounded-2xl">
         <Image
           src={selectedImage}
           alt={name}

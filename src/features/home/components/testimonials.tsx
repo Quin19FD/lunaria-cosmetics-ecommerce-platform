@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
 
-import type { Testimonial } from "@/modules/testimonials"
+import type { Testimonial } from "@/modules/testimonials";
 
 interface TestimonialsProps {
   testimonials: Testimonial[];
@@ -12,7 +12,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
     <section className="bg-neutral-50 py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
-        <h2 className="font-serif text-2xl font-bold text-center text-neutral-900 sm:text-3xl">
+        <h2 className="text-center font-serif text-2xl font-bold text-neutral-900 sm:text-3xl">
           Khách Hàng Nói Gì?
         </h2>
 
@@ -26,7 +26,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="flex flex-col rounded-2xl bg-white p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
+              className="flex flex-col rounded-2xl bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
             >
               {/* Stars */}
               <div className="flex gap-1">
@@ -40,7 +40,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
               </div>
 
               {/* Quote */}
-              <p className="mt-4 flex-grow italic text-neutral-600">
+              <p className="mt-4 flex-grow text-neutral-600 italic">
                 &ldquo;{testimonial.content}&rdquo;
               </p>
 
@@ -59,7 +59,9 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
                   <p className="font-semibold text-neutral-900">
                     {testimonial.name}
                   </p>
-                  <p className="text-xs text-neutral-400">{testimonial.title}</p>
+                  <p className="text-xs text-neutral-400">
+                    {testimonial.title}
+                  </p>
                 </div>
               </div>
             </div>

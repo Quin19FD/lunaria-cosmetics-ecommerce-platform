@@ -31,8 +31,8 @@ export function ContactInfo() {
           key={item.title}
           className="flex gap-4 rounded-xl border border-neutral-100 bg-white p-5 shadow-sm"
         >
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-brand-50">
-            <item.icon className="h-5 w-5 text-brand-500" />
+          <div className="bg-brand-50 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg">
+            <item.icon className="text-brand-500 h-5 w-5" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-neutral-900">

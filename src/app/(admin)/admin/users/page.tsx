@@ -8,6 +8,7 @@ import {
   Pagination,
   type Column,
 } from "@/features/admin";
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 
@@ -43,7 +44,8 @@ export default async function UsersPage({
 }: {
   searchParams: Promise<{ q?: string; role?: string; page?: string }>;
 }) {
-  const sp = await searchParams;
+  const [admin, sp] = await Promise.all([requireAdmin(), searchParams]);
+  const canEditRoles = admin.role === "SUPER_ADMIN";
   const q = sp.q?.trim() ?? "";
   const role = sp.role && sp.role in ROLE_LABELS ? (sp.role as UserRole) : "";
   const page = Math.max(1, Number(sp.page) || 1);
@@ -90,25 +92,28 @@ export default async function UsersPage({
     },
     {
       header: "Đổi vai trò",
-      cell: (user) => (
-        <form
-          action={updateUserRole.bind(null, user.id)}
-          className="flex items-center gap-2"
-        >
-          <Select
-            name="role"
-            defaultValue={user.role}
-            className="h-9 w-44 text-xs"
+      cell: (user) =>
+        !canEditRoles || user.id === admin.id ? (
+          <span className="text-xs text-neutral-400">—</span>
+        ) : (
+          <form
+            action={updateUserRole.bind(null, user.id)}
+            className="flex items-center gap-2"
           >
-            <option value="CUSTOMER">Khách hàng</option>
-            <option value="ADMIN">Quản trị</option>
-            <option value="SUPER_ADMIN">Quản trị cấp cao</option>
-          </Select>
-          <Button type="submit" size="sm" variant="outline">
-            Lưu
-          </Button>
-        </form>
-      ),
+            <Select
+              name="role"
+              defaultValue={user.role}
+              className="h-9 w-44 text-xs"
+            >
+              <option value="CUSTOMER">Khách hàng</option>
+              <option value="ADMIN">Quản trị</option>
+              <option value="SUPER_ADMIN">Quản trị cấp cao</option>
+            </Select>
+            <Button type="submit" size="sm" variant="outline">
+              Lưu
+            </Button>
+          </form>
+        ),
     },
     {
       header: "Số đơn",
