@@ -34,12 +34,12 @@ export function Newsletter() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Địa chỉ email của bạn"
-              className="flex-1 bg-transparent px-4 text-sm outline-none"
+              className="min-w-0 flex-1 bg-transparent px-4 text-sm outline-none"
               required
             />
             <Button
               type="submit"
-              className="rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+              className="shrink-0 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 sm:px-6"
             >
               Đăng ký ngay
             </Button>

@@ -32,14 +32,15 @@ export function CollectionsCta() {
         <input
           type="email"
           required
-          placeholder="Địa chỉ email của bạn"
+          aria-label="Địa chỉ email của bạn"
+          placeholder="Email của bạn"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="flex-1 bg-transparent px-4 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+          className="min-w-0 flex-1 bg-transparent px-3 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 sm:px-4"
         />
         <button
           type="submit"
-          className="rounded-full bg-neutral-900 px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
+          className="shrink-0 rounded-full bg-neutral-900 px-3 py-2.5 text-[11px] font-semibold tracking-normal whitespace-nowrap text-white uppercase transition-colors hover:bg-neutral-800 sm:px-6 sm:text-xs sm:tracking-wider"
         >
           Thông báo cho tôi
         </button>

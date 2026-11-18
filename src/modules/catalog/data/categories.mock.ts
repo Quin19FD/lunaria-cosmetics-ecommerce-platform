@@ -6,7 +6,7 @@ export const CATEGORIES_MOCK: Category[] = [
     name: "Dưỡng da",
     slug: "duong-da",
     image:
-      "https://images.unsplash.com/photo-1785581778868-79100f7fe56c?w=400&h=400&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1763503834047-ac85c4105c0b?w=400&h=400&fit=crop&q=80",
   },
   {
     id: "cat_02",

@@ -61,12 +61,35 @@ async function seedUsers() {
   }
 }
 
+const categoryImage = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?w=400&h=400&fit=crop&q=80`;
+
 const CATEGORIES = [
-  { name: "Chăm sóc da", slug: "cham-soc-da" },
-  { name: "Trang điểm", slug: "trang-diem" },
-  { name: "Chăm sóc tóc", slug: "cham-soc-toc" },
-  { name: "Nước hoa", slug: "nuoc-hoa" },
-  { name: "Chống nắng", slug: "chong-nang" },
+  {
+    name: "Chăm sóc da",
+    slug: "cham-soc-da",
+    image: categoryImage("1763503834047-ac85c4105c0b"),
+  },
+  {
+    name: "Trang điểm",
+    slug: "trang-diem",
+    image: categoryImage("1701271482230-5ecaec3cd3e1"),
+  },
+  {
+    name: "Chăm sóc tóc",
+    slug: "cham-soc-toc",
+    image: categoryImage("1771535626784-7de36a960c1a"),
+  },
+  {
+    name: "Nước hoa",
+    slug: "nuoc-hoa",
+    image: categoryImage("1760920250029-36af9369a0bb"),
+  },
+  {
+    name: "Chống nắng",
+    slug: "chong-nang",
+    image: categoryImage("1632127579802-ff69469091a4"),
+  },
 ];
 
 const BRANDS = [
@@ -314,7 +337,7 @@ async function seedCatalog() {
   for (const c of CATEGORIES) {
     await prisma.category.upsert({
       where: { slug: c.slug },
-      update: {},
+      update: { image: c.image },
       create: c,
     });
   }
@@ -532,7 +555,11 @@ async function main() {
   await seedCoupons();
   await seedPromotions();
   await seedCollections();
-  console.log("   • admin: admin@lunaria.beauty / admin123");
+  console.log(
+    process.env.SEED_SUPER_ADMIN_PASSWORD
+      ? "   • admin: admin@lunaria.beauty / (SEED_SUPER_ADMIN_PASSWORD)"
+      : "   • admin: admin@lunaria.beauty / admin123",
+  );
   console.log("   • customer: demo@lunaria.beauty / 123456");
   console.log("✅ Seed complete.");
 }

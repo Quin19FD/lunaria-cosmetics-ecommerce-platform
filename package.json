@@ -23,6 +23,7 @@
     "db:studio": "prisma studio",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test -c playwright.visual.config.ts",
     "prepare": "husky",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "test": "vitest run"

@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder";
 
 import type { Product, ProductFilters, SkinType } from "../types";
 
@@ -19,8 +20,6 @@ const PRODUCT_INCLUDE = {
 type ProductRecord = Prisma.ProductGetPayload<{
   include: typeof PRODUCT_INCLUDE;
 }>;
-
-const PLACEHOLDER = "https://placehold.co/600x600/fce7f0/ef3985?text=Lunaria";
 
 function pickDefaultVariant(
   variants: {
@@ -59,7 +58,7 @@ function toView(p: ProductRecord): Product {
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
-    image: images[0] ?? PLACEHOLDER,
+    image: images[0] ?? PLACEHOLDER_IMAGE,
     images,
     category: p.category.name,
     categorySlug: p.category.slug,

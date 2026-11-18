@@ -175,7 +175,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-2">
+      {/* Below sm the three do not fit one row: "Mua ngay" takes its own. */}
+      <div className="flex flex-wrap gap-3 pt-2">
         <Button
           variant="outline"
           size="lg"
@@ -191,7 +192,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           size="lg"
           onClick={handleBuyNow}
           disabled={stock <= 0}
-          className="flex-1"
+          className="order-last w-full sm:order-none sm:w-auto sm:flex-1"
         >
           Mua ngay
         </Button>

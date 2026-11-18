@@ -2,8 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-
-const PLACEHOLDER = "https://placehold.co/600x600/fce7f0/ef3985?text=Lunaria";
+import { PLACEHOLDER_IMAGE } from "@/lib/placeholder";
 
 export interface CartLine {
   variantId: string;
@@ -50,7 +49,7 @@ export async function getCartItems(variantIds: string[]): Promise<CartLine[]> {
     productId: v.product.id,
     productName: v.product.name,
     productSlug: v.product.slug,
-    image: v.product.images[0]?.url ?? PLACEHOLDER,
+    image: v.product.images[0]?.url ?? PLACEHOLDER_IMAGE,
     variantName: v.name,
     price: v.price,
     salePrice: v.salePrice,

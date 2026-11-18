@@ -69,6 +69,7 @@ postgres-data/
 # playwright e2e
 /test-results/
 /playwright-report/
+/visual-shots/
 /playwright/.cache/
 
 # AI tool config / agent memory — local only, not part of the product
